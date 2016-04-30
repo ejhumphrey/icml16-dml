@@ -1,13 +1,12 @@
 """Methods and routines to manipulate timbre data."""
 
 import biggie
-import itertools
 import glob
 import numpy as np
 import os
 import pandas as pd
 import pescador
-import time
+import random
 
 import dml.utils as utils
 
@@ -52,6 +51,29 @@ def index_directory(base_dir, sep='_'):
         index += [sep.join([str(x) for x in parse_filename(f, sep)])]
 
     return pd.DataFrame.from_records(records, index=index)
+
+
+def split_dataset(dframe, ratio=0.5):
+    """Split dataset into two disjoint sets.
+
+    Parameters
+    ----------
+    dframe : pd.DataFrame
+        Dataset to split.
+
+    Returns
+    -------
+    set1, set2 : pd.DataFrames
+        Partitioned sets.
+    """
+    index = np.array(dframe.index.tolist())
+    np.random.shuffle(index)
+
+    tr_size = int(ratio * len(index))
+    tr_index = index[:tr_size]
+    te_index = index[tr_size:]
+
+    return dframe.loc[tr_index], dframe.loc[te_index]
 
 
 def instrument_neighbors(dframe):
@@ -116,85 +138,48 @@ def instrument_pitch_neighbors(dframe, pitch_delta=0):
     return neighbors
 
 
-def create_entity(npz_file, dtype=np.float32):
-    """Create an entity from the given file.
+def slice_features(row, field, window_length):
+    """Generate slices of CQT observations.
 
     Parameters
     ----------
-    npz_file: str
-        Path to a 'npz' archive, containing at least a value for 'cqt'.
+    row : pd.Series
+        Row from a dataframe.
 
-    dtype: type
-        Data type for the cqt array.
+    window_length : int
+        Length of the CQT slice in time.
 
-    Returns
-    -------
-    entity: biggie.Entity
-        Populated entity, with the following fields:
-            {cqt, time_points, icode, note_number, fcode}.
+    Yields
+    ------
+    x_obs : np.ndarray
+        Slice of cqt data.
+
+    meta : dict
+        Metadata corresponding to the observation.
     """
-    (icode, note_number,
-        fcode) = [np.array(_) for _ in parse_filename(npz_file)]
-    entity = biggie.Entity(icode=icode, note_number=note_number,
-                           fcode=fcode, **np.load(npz_file))
-    entity.cqt = entity.cqt.astype(dtype)
-    return entity
+
+    data = np.load(row.features)[field]
+    num_obs = data.shape[1] - window_length
+    idx = np.random.permutation(num_obs) if num_obs > 0 else None
+    np.random.shuffle(idx)
+    counter = 0
+    meta = dict(instrument=row.instrument, note_number=row.note_number,
+                fcode=row.fcode)
+
+    while num_obs > 0:
+        n = idx[counter]
+        obs = utils.padded_slice_ndarray(data, n, length=window_length, axis=1)
+        meta['idx'] = n
+        yield obs, meta
+        counter += 1
+        if counter >= len(idx):
+            np.random.shuffle(idx)
+            counter = 0
 
 
-def slice_cqt_entity(entity, length, idx=None):
-    """Return a windowed slice of a cqt Entity.
-
-    Parameters
-    ----------
-    entity : Entity, with at least {cqt, icode} fields
-        Observation to window.
-        Note that entity.cqt is shaped (num_channels, num_frames, num_bins).
-
-    length : int
-        Length of the sliced array.
-
-    idx : int, or None
-        Centered frame index for the slice, or random if not provided.
-
-    Returns
-    -------
-    sample: biggie.Entity with fields {cqt, label}
-        The windowed observation.
-    """
-    idx = np.random.randint(entity.cqt.shape[1]) if idx is None else idx
-    cqt = np.array([utils.slice_tile(x, idx, length) for x in entity.cqt])
-    return biggie.Entity(cqt=cqt, icode=entity.icode,
-                         note_number=entity.note_number, fcode=entity.fcode)
-
-
-def slice_embedding_entity(entity, length, idx=None):
-    """Return a windowed slice of a cqt Entity.
-
-    Parameters
-    ----------
-    entity : Entity, with at least {cqt, icode} fields
-        Observation to window.
-        Note that entity.cqt is shaped (num_channels, num_frames, num_bins).
-    length : int
-        Length of the sliced array.
-    idx : int, or None
-        Centered frame index for the slice, or random if not provided.
-
-    Returns
-    -------
-    sample: biggie.Entity with fields {cqt, label}
-        The windowed observation.
-    """
-    idx = np.random.randint(entity.embedding.shape[0]) if idx is None else idx
-    return biggie.Entity(
-        embedding=entity.embedding[idx],
-        time=entity.time_points[idx],
-        fcode=entity.fcode,
-        note_number=entity.note_number,
-        icode=entity.icode)
-
-
-def neighbor_stream(dframe, neighbors, slice_func, **kwargs):
+def neighbor_stream(neighbors, dataset, slice_func,
+                    working_size=10, lam=25,
+                    **kwargs):
     """Produce a sample stream of positive and negative examples.
 
     Parameters
@@ -220,4 +205,23 @@ def neighbor_stream(dframe, neighbors, slice_func, **kwargs):
         Tensors corresponding to the base observation, a similar datapoint,
         and a different one.
     """
-    pass
+    streams = dict()
+    for key, indexes in neighbors.items():
+        seed_pool = [pescador.Streamer(slice_func, dataset.loc[idx], **kwargs)
+                     for idx in indexes]
+        streams[key] = pescador.mux(seed_pool, n_samples=None,
+                                    k=working_size, lam=lam)
+    while True:
+        keys = list(streams.keys())
+        idx = random.choice(keys)
+        x_obs, y_obs = next(streams[idx])
+        x_same, y_same = next(streams[idx])
+        keys.remove(idx)
+        idx = random.choice(keys)
+        x_diff, y_diff = next(streams[idx])
+        yield dict(x_obs=x_obs, x_same=x_same, x_diff=x_diff)
+        # , (y_obs, y_same, y_diff)
+
+# def class_stream2(dframe, n_in, batch_size, working_size=100, lam=20):
+
+#     return pescador.buffer_batch(stream, buffer_size=batch_size)

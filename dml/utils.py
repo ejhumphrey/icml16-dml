@@ -47,3 +47,54 @@ def slice_tile(x_in, idx, length):
     else:
         tile[:, :] = x_in[start_idx:end_idx, :]
     return tile
+
+
+def slice_ndarray(x_in, idx, length, axis=0):
+    """Extract a slice from an ndarray, along a given axis.
+
+    Parameters
+    ----------
+    x_in : np.ndarray
+        Array to slice.
+
+    idx : int, 0 < n < x_in.shape[axis] - length
+        Index to start the resulting tile.
+
+    length : int
+        Total length for the output tile.
+
+    axis : int, default=0
+        Axis over which to slice the ndarray.
+
+    Returns
+    -------
+    z_out : np.ndarray
+        The sliced subtensor.
+    """
+    slice_idxs = [slice(None, ) for n in range(x_in.ndim)]
+    slice_idxs[axis] = slice(idx, idx + length)
+    return x_in[tuple(slice_idxs)]
+
+
+def padded_slice_ndarray(x_in, idx, length, axis=0):
+    """Extract a padded slice from an ndarray, along a given axis.
+    Parameters
+    ----------
+    x_in : np.ndarray
+        Array to slice.
+    idx : int, 0 < n < x_in.shape[axis]
+        Centered index for the resulting tile.
+    length : int
+        Total length for the output tile.
+    axis : int, default=0
+        Axis over which to slice the ndarray.
+    Returns
+    -------
+    z_out : np.ndarray
+        The sliced subtensor.
+    """
+    pad_length = length / 2
+    pad_width = [(0, 0) for n in range(x_in.ndim)]
+    pad_width[axis] = [pad_length, pad_length + 1]
+    x_in = np.pad(x_in, pad_width, mode='constant')
+    return slice_ndarray(x_in, idx, length, axis)
