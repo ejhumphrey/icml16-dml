@@ -21,8 +21,8 @@ import dml.models as M
 import dml.utils as utils
 
 
-def main(trial_name, output_dir, model_params, hyperparams,
-         train_params, param_file, stream_params):
+def fit(trial_name, output_dir, model_params, hyperparams,
+        train_params, param_file, stream_params):
 
     trainer, predictor = M.create(**model_params)
 
@@ -47,6 +47,15 @@ def main(trial_name, output_dir, model_params, hyperparams,
     driver.fit(source, hyperparams=hyperparams, **train_params)
 
 
+def main(config_file):
+    kwargs = yaml.load(open(args.config_file))
+
+    output_dir = kwargs['output_dir']
+    utils.safe_makedirs(output_dir)
+    shutil.copy(args.config_file, output_dir)
+    fit(**kwargs)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
 
@@ -55,9 +64,4 @@ if __name__ == "__main__":
                         metavar="config_file", type=str,
                         help="Path to a yaml config file.")
     args = parser.parse_args()
-    kwargs = yaml.load(open(args.config_file))
-
-    output_dir = kwargs['output_dir']
-    utils.safe_makedirs(output_dir)
-    shutil.copyfile(args.config_file, output_dir)
-    main(**kwargs)
+    main(args.config_file)
