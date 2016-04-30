@@ -1,6 +1,5 @@
 """Methods and routines to manipulate timbre data."""
 
-import biggie
 import glob
 import numpy as np
 import os
@@ -123,7 +122,7 @@ def pitch_neighbors(dframe, pitch_delta=0):
     # return neighbors
 
 
-def instrument_pitch_neighbors(dframe, pitch_delta=0, min_population=10):
+def instrument_pitch_neighbors(dframe, pitch_delta=0, min_population=0):
     """Create lists of instrument/pitch neighbors.
 
     Parameters
@@ -183,7 +182,7 @@ def slice_cqt(row, window_length):
 
     while num_obs > 0:
         n = idx[counter]
-        obs = utils.padded_slice_ndarray(data, n, length=window_length, axis=1)
+        obs = utils.slice_ndarray(data, n, length=window_length, axis=1)
         obs = obs[np.newaxis, ...]
         meta['idx'] = n
         yield obs, meta
@@ -230,12 +229,12 @@ def neighbor_stream(neighbors, dataset, slice_func,
     while True:
         keys = list(streams.keys())
         idx = random.choice(keys)
-        x_obs, y_obs = next(streams[idx])
+        x_in, y_in = next(streams[idx])
         x_same, y_same = next(streams[idx])
         keys.remove(idx)
         idx = random.choice(keys)
         x_diff, y_diff = next(streams[idx])
-        yield dict(x_obs=x_obs, x_same=x_same, x_diff=x_diff)
+        yield dict(x_in=x_in, x_same=x_same, x_diff=x_diff)
         # , (y_obs, y_same, y_diff)
 
 # def class_stream2(dframe, n_in, batch_size, working_size=100, lam=20):
