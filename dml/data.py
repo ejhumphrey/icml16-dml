@@ -150,6 +150,30 @@ def instrument_pitch_neighbors(dframe, pitch_delta=0, min_population=0):
     return neighbors
 
 
+def population_filter(neighbors, min_population):
+    """Drop key-index pairs with insufficient populations.
+
+    Parameters
+    ----------
+    neighbors : dict
+        Key-index mappings.
+
+    min_population : int
+        Minimum number of items to keep, inclusive.
+
+    Returns
+    -------
+    filt_neighbors : dict
+        Population-filtered key-index mappings.
+    """
+    nbs = {}
+    keys = list(neighbors.keys())
+    for k in keys:
+        if len(neighbors[k]) >= min_population:
+            nbs[k] = neighbors[k]
+    return nbs
+
+
 def slice_cqt(row, window_length):
     """Generate slices of CQT observations.
 
