@@ -2,6 +2,15 @@ import numpy as np
 import os
 
 
+def safe_makedirs(dpath):
+    if not os.path.exists(dpath):
+        os.makedirs(dpath)
+
+
+def safe_makedirname(fname):
+    safe_makedirs(os.path.dirname(fname))
+
+
 def filebase(filepath):
     """For a full filepath like '/path/to/some/file.xyz', return 'file'.
 

@@ -4,6 +4,7 @@ import yaml
 
 import dml.data
 import dml.driver
+import dml.utils
 
 
 def build(config):
@@ -16,13 +17,14 @@ def build(config):
     train, valid = dml.data.split_dataset(
         train, kwargs['train_valid_ratio'])
 
-    train.to_json(kwargs['train_file'])
-    valid.to_json(kwargs['valid_file'])
-    test.to_json(kwargs['test_file'])
-    for k in ['train_file', 'valid_file', 'test_file']:
-        if not os.path.exists(kwargs[k]):
+    for k, dset in {'train': train, 'valid': valid, 'test': test}.items():
+        fout = kwargs['{}_file'.format(k)]
+        dml.utils.safe_makedirname(fout)
+        dset.to_json(fout)
+
+        if not os.path.exists(fout):
             raise ValueError(
-                "Failed to write data partition {}: {}".format(k, kwargs[k]))
+                "Failed to write data partition {}: {}".format(k, fout))
     return config
 
 
