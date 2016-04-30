@@ -1,28 +1,37 @@
-trial_name: "deleteme"
-output_dir: "/media/ejhumphrey/workspace/icml-dml/models"
 
-stream_params:
-  dataset: "/media/ejhumphrey/workspace/icml-dml/datasets/train0.json"
-  neighbor_mode: "instrument"
-  batch_size: 32
-  working_size: 25
-  lam: 20
+build:
+  data_root: "/media/ejhumphrey/workspace/icml-dml/features/cqts"
+  train_test_ratio: 0.75
+  train_valid_ratio: 0.8
+  train_file: "/media/ejhumphrey/workspace/icml-dml/datasets/train.json"
+  valid_file: "/media/ejhumphrey/workspace/icml-dml/datasets/valid.json"
+  test_file: "/media/ejhumphrey/workspace/icml-dml/datasets/test.json"
 
-model_params:
-  name: "nlse"
-  n_in: 10
-  n_out: 3
-  size: "large"
-  verbose: yes
+train:
+  trial_name: "deleteme"
+  model_dir: "/media/ejhumphrey/workspace/icml-dml/models"
+  data_params:
+    dataset: "/media/ejhumphrey/workspace/icml-dml/datasets/train.json"
+    neighbor_mode: "instrument"
+    batch_size: 32
+    working_size: 25
+    lam: 20
 
-hyperparams:
-  learning_rate: 0.1
-  margin_same: 0.0
-  margin_diff: 1.0
-  origin_penalty: 0.01
+  model_params:
+    name: "nlse"
+    n_in: 10
+    n_out: 3
+    size: "large"
+    verbose: yes
 
-train_params:
-  max_iter: 5000
-  save_freq: 500
-  print_freq: 50
-  nan_exceptions: 10
+  hyperparams:
+    learning_rate: 0.1
+    margin_same: 0.0
+    margin_diff: 1.0
+    origin_penalty: 0.01
+
+  train_params:
+    max_iter: 5000
+    save_freq: 500
+    print_freq: 50
+    nan_exceptions: 10

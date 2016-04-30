@@ -2,18 +2,17 @@
 
 Example
 -------
-$ python scripts/training_driver.py \
+$ python dml/driver.py \
     data/nlse_config.yaml \
-    output_dir \
-    --verbose
+    --output_file training_config.yaml
 """
 
 from __future__ import print_function
+
 import argparse
 import optimus
-import pandas as pd
 import os
-import shutil
+import pandas as pd
 import yaml
 
 import dml.data as D
@@ -23,13 +22,24 @@ import dml.utils as utils
 
 def fit(trial_name, output_dir, model_params, hyperparams,
         train_params, data_params, param_file=''):
+    """Fit a model given the parameters.
 
+    Parameters
+    ----------
+    ...
+
+    Returns
+    -------
+    artifacts : dict
+        Contains data resulting from fitting the model.
+    """
     trainer, predictor = M.create(**model_params)
 
     data_params.update(
         window_length=model_params['n_in'],
         dataset=pd.read_json(data_params.pop('dataset')))
 
+    # TODO: Migrate this into the config object... but where?!
     source = D.awgn(D.create_stream(**data_params), 0.1, 0.01)
 
     print("Starting '{0}'".format(trial_name))
@@ -46,6 +56,36 @@ def fit(trial_name, output_dir, model_params, hyperparams,
                               "{}-predictor.json".format(trial_name))
     optimus.save(predictor, model_file)
     driver.fit(source, hyperparams=hyperparams, **train_params)
+    return dict(log_file=log_file, model_file=model_file)
+
+
+def main(config, filename=''):
+    """Run the main driver.
+
+    Parameters
+    ----------
+    config : dict
+        State object for training.
+
+    filename : str
+        Filename for writing the updated config file.
+
+    Returns
+    -------
+    output_config : dict
+        Updated config file.
+    """
+    output_dir = config['output_dir']
+    utils.safe_makedirs(output_dir)
+
+    config.update(model_outputs=fit(**config))
+
+    # Snapshot this artifact.
+    if filename:
+        output_config = os.path.join(output_dir, filename)
+        with open(output_config, 'w') as fp:
+            yaml.dump(config, fp)
+    return config
 
 
 if __name__ == "__main__":
@@ -55,10 +95,9 @@ if __name__ == "__main__":
     parser.add_argument("config_file",
                         metavar="config_file", type=str,
                         help="Path to a yaml config file.")
+    parser.add_argument("--output_file",
+                        metavar="output_file", type=str, default='',
+                        help="Path to a yaml config file.")
     args = parser.parse_args()
-    kwargs = yaml.load(open(args.config_file))
-
-    output_dir = kwargs['output_dir']
-    utils.safe_makedirs(output_dir)
-    shutil.copy(args.config_file, output_dir)
-    fit(**kwargs)
+    config = yaml.load(open(args.config_file))
+    main(config, args.output_file)
