@@ -1,5 +1,6 @@
 import pytest
 
+import numpy as np
 
 import dml.data as D
 
@@ -53,12 +54,53 @@ def test_slice_cqt(dataset):
 
 
 def test_neighbor_stream(dataset):
+
     n_in = 4
+    n_iters = 1000
     nbs = D.instrument_neighbors(dataset)
     stream = D.neighbor_stream(
         nbs, dataset, D.slice_cqt, working_size=2, lam=5,
         window_length=n_in)
+
+    def assert_data_shape(data):
+        shp = (1, 1, n_in, 192)
+        assert data['x_in'].shape == shp
+        assert data['x_same'].shape == shp
+        assert data['x_diff'].shape == shp
+
+    for n in range(n_iters):
+        assert_data_shape(next(stream))
+
+
+def test_neighbor_stream_class_occurrence(dataset):
+    n_in = 4
+    n_iters = 5000
+    nbs = D.instrument_neighbors(dataset)
+    stream = D.neighbor_stream(
+        nbs, dataset, D.slice_cqt, working_size=2, lam=5,
+        window_length=n_in, with_meta=True)
+
+    hist = {}
+    for n in range(n_iters):
+        inst = next(stream)[1]['y_in']['instrument']
+        if inst not in hist:
+            hist[inst] = 0
+        hist[inst] += 1
+
+    insts = list(hist.keys())
+    counts = np.array([hist[i] for i in insts])
+
+    min_count = (0.5 * n_iters / len(nbs))
+    assert counts.min() > min_count, "Expected higher counts: {}".format(hist)
+
+
+def test_create_stream(dataset):
+    n_in = 4
+    batch_size = 10
+    stream = D.create_stream(
+        dataset, 'instrument', batch_size, n_in, working_size=2, lam=5)
+
     data = next(stream)
-    assert data['x_in'].shape == (1, 1, n_in, 192)
-    assert data['x_same'].shape == (1, 1, n_in, 192)
-    assert data['x_diff'].shape == (1, 1, n_in, 192)
+    assert data['x_in'].shape == (batch_size, 1, n_in, 192)
+    assert data['x_same'].shape == (batch_size, 1, n_in, 192)
+    assert data['x_diff'].shape == (batch_size, 1, n_in, 192)

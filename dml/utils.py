@@ -78,8 +78,9 @@ def slice_ndarray(x_in, idx, length, axis=0):
     return x_in[tuple(slice_idxs)]
 
 
-def padded_slice_ndarray(x_in, idx, length, axis=0):
+def padded_slice_ndarray(x_in, idx, length, axis=0, fill_value=0.0):
     """Extract a padded slice from an ndarray, along a given axis.
+
     Parameters
     ----------
     x_in : np.ndarray
@@ -101,6 +102,7 @@ def padded_slice_ndarray(x_in, idx, length, axis=0):
     """
     pad_length = length / 2
     pad_width = [(0, 0) for n in range(x_in.ndim)]
-    pad_width[axis] = [pad_length, pad_length + 1]
-    x_in = np.pad(x_in, pad_width, mode='constant')
+    pad_width[axis] = (pad_length, pad_length + 1)
+    x_in = np.pad(x_in, np.array(pad_width).astype(int),
+                  mode='constant', constant_values=fill_value)
     return slice_ndarray(x_in, idx, length, axis)

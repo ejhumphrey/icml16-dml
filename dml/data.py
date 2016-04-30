@@ -171,10 +171,13 @@ def slice_cqt(row, window_length):
     """
 
     data = np.load(row.features)['cqt']
-    num_obs = data.shape[1] - window_length
+    num_obs = data.shape[1]
     # Break the remainder out into a subfunction for reuse with embedding
     # sampling.
     idx = np.random.permutation(num_obs) if num_obs > 0 else None
+    if idx is None:
+        raise ValueError(
+            "Misshapen CQT ({}) - {}".format(data.shape, row.to_dict()))
     np.random.shuffle(idx)
     counter = 0
     meta = dict(instrument=row.instrument, note_number=row.note_number,
@@ -182,7 +185,7 @@ def slice_cqt(row, window_length):
 
     while num_obs > 0:
         n = idx[counter]
-        obs = utils.slice_ndarray(data, n, length=window_length, axis=1)
+        obs = utils.padded_slice_ndarray(data, n, length=window_length, axis=1)
         obs = obs[np.newaxis, ...]
         meta['idx'] = n
         yield obs, meta
@@ -193,32 +196,41 @@ def slice_cqt(row, window_length):
 
 
 def neighbor_stream(neighbors, dataset, slice_func,
-                    working_size=10, lam=25,
+                    working_size=10, lam=25, with_meta=False,
                     **kwargs):
     """Produce a sample stream of positive and negative examples.
 
     Parameters
     ----------
-    dframe : pd.DataFrame
-        DataFrame to sample from.
-
-    index : str
-        Index into the dataframe from which to draw samples.
-
     neighbors : dict of lists
         Map of neighborhood keys (names) to lists of related indexes.
 
+    dataset : pd.DataFrame
+        Dataset from which to sample.
+
     slice_func : callable
         Method for slicing observations from a npz archive.
+
+    working_size : int, default=10
+        Number of sample sources to keep alive.
+
+    lam : number, default=25
+        Sample refresh-rate parameter.
+
+    with_meta : bool, default=False
+        If True, yields a tuple of (X, Y) data.
 
     kwargs : dict
         Keyword arguments to pass through to the slicing function.
 
     Yields
     ------
-    x_obs, x_same, x_diff : np.ndarrays
+    x_in, x_same, x_diff : np.ndarrays
         Tensors corresponding to the base observation, a similar datapoint,
         and a different one.
+
+    y_in, y_same, y_diff : dicts
+        Metadata corresponding to the samples 'x' data.
     """
     streams = dict()
     for key, indexes in neighbors.items():
@@ -234,12 +246,10 @@ def neighbor_stream(neighbors, dataset, slice_func,
         keys.remove(idx)
         idx = random.choice(keys)
         x_diff, y_diff = next(streams[idx])
-        yield dict(x_in=x_in, x_same=x_same, x_diff=x_diff)
-        # , (y_obs, y_same, y_diff)
+        result = (dict(x_in=x_in, x_same=x_same, x_diff=x_diff),
+                  dict(y_in=y_in, y_same=y_same, y_diff=y_diff))
+        yield result if with_meta else result[0]
 
-# def class_stream2(dframe, n_in, batch_size, working_size=100, lam=20):
-
-#     return pescador.buffer_batch(stream, buffer_size=batch_size)
 
 NEIGHBORS = {
     "instrument": instrument_neighbors,
@@ -288,4 +298,5 @@ def create_stream(dataset, neighbor_mode, batch_size, window_length,
     stream = neighbor_stream(
         neighbors, dataset, slice_func=slice_cqt, window_length=window_length,
         lam=lam, working_size=working_size)
+
     return pescador.buffer_batch(stream, buffer_size=batch_size)
