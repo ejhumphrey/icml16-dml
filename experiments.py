@@ -31,7 +31,7 @@ def build(config):
 def train(config):
     kwargs = config['train']
     config_out = "{trial_name}_config.yaml".format(**kwargs)
-    config['train'] = dml.driver(kwargs, config_out)
+    config['train'] = dml.driver.fit(kwargs, config_out)
     return config
 
 
