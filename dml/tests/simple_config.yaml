@@ -16,7 +16,7 @@ model_params:
   verbose: yes
 
 hyperparams:
-  learning_rate: 0.02
+  learning_rate: 0.1
   margin_same: 0.0
   margin_diff: 1.0
   origin_penalty: 0.0

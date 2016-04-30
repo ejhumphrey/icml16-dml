@@ -40,7 +40,8 @@ def fit(trial_name, output_dir, model_params, hyperparams,
         graph=trainer,
         name=trial_name,
         output_directory=output_dir,
-        log_file=log_file)
+        log_file=log_file,
+        display=False)
 
     model_file = os.path.join(output_dir,
                               "{}-predictor.json".format(trial_name))
