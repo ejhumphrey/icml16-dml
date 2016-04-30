@@ -300,3 +300,11 @@ def create_stream(dataset, neighbor_mode, batch_size, window_length,
         lam=lam, working_size=working_size)
 
     return pescador.buffer_batch(stream, buffer_size=batch_size)
+
+
+def awgn(stream, loc, scale):
+    for data in stream:
+        for k in data:
+            data[k] += np.random.normal(loc, scale, data[k].shape)
+
+        yield data

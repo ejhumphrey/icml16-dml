@@ -58,7 +58,7 @@ def nlse_iX_c3f2_oY(n_in, n_out, size='large', verbose=False):
     # Inputs
     # ------
     x_in = optimus.Input(
-        name='x_in', shape=(None, 5, n_in, 48))
+        name='x_in', shape=(None, 1, n_in, 192))
     x_same = optimus.Input(
         name='x_same', shape=x_in.shape)
     x_diff = optimus.Input(
@@ -82,21 +82,21 @@ def nlse_iX_c3f2_oY(n_in, n_out, size='large', verbose=False):
     layer0 = optimus.Conv3D(
         name='layer0',
         input_shape=x_in.shape,
-        weight_shape=(k0, None, n0, 7),
+        weight_shape=(k0, None, n0, 13),
         pool_shape=(p0, 1),
         act_type='relu')
 
     layer1 = optimus.Conv3D(
         name='layer1',
         input_shape=layer0.output.shape,
-        weight_shape=(k1, None, n1, 7),
+        weight_shape=(k1, None, n1, 11),
         pool_shape=(p1, 1),
         act_type='relu')
 
     layer2 = optimus.Conv3D(
         name='layer2',
         input_shape=layer1.output.shape,
-        weight_shape=(k2, None, n2, 7),
+        weight_shape=(k2, None, n2, 9),
         pool_shape=(p2, 1),
         act_type='relu')
 

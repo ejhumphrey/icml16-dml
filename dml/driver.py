@@ -22,14 +22,15 @@ import dml.utils as utils
 
 
 def fit(trial_name, output_dir, model_params, hyperparams,
-        train_params, param_file, stream_params):
+        train_params, data_params, param_file=''):
 
     trainer, predictor = M.create(**model_params)
 
-    stream_params.update(
+    data_params.update(
         window_length=model_params['n_in'],
-        dframe=pd.read_json(stream_params.pop('training_index')))
-    source = D.create_stream(**stream_params)
+        dataset=pd.read_json(data_params.pop('dataset')))
+
+    source = D.awgn(D.create_stream(**data_params), 0.1, 0.01)
 
     print("Starting '{0}'".format(trial_name))
     param_file = os.path.join(output_dir, param_file)
@@ -47,15 +48,6 @@ def fit(trial_name, output_dir, model_params, hyperparams,
     driver.fit(source, hyperparams=hyperparams, **train_params)
 
 
-def main(config_file):
-    kwargs = yaml.load(open(args.config_file))
-
-    output_dir = kwargs['output_dir']
-    utils.safe_makedirs(output_dir)
-    shutil.copy(args.config_file, output_dir)
-    fit(**kwargs)
-
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
 
@@ -64,4 +56,9 @@ if __name__ == "__main__":
                         metavar="config_file", type=str,
                         help="Path to a yaml config file.")
     args = parser.parse_args()
-    main(args.config_file)
+    kwargs = yaml.load(open(args.config_file))
+
+    output_dir = kwargs['output_dir']
+    utils.safe_makedirs(output_dir)
+    shutil.copy(args.config_file, output_dir)
+    fit(**kwargs)
