@@ -2,7 +2,8 @@ import argparse
 import os
 import yaml
 
-import dml
+import dml.data
+import dml.driver
 
 
 def build(config):
