@@ -78,13 +78,18 @@ def main(config, filename=''):
     output_dir = config['output_dir']
     utils.safe_makedirs(output_dir)
 
-    config.update(model_outputs=fit(**config))
+    config.update(model_outputs=fit(**config.copy()))
 
     # Snapshot this artifact.
     if filename:
         output_config = os.path.join(output_dir, filename)
-        with open(output_config, 'w') as fp:
-            yaml.dump(config, fp)
+        try:
+            with open(output_config, 'w') as fp:
+                yaml.dump(config, fp)
+        except TypeError as derp:
+            print("Saving config failed: {}\n\n{}"
+                  "".format(config, derp))
+
     return config
 
 

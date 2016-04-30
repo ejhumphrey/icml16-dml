@@ -169,8 +169,12 @@ def slice_cqt(row, window_length):
     meta : dict
         Metadata corresponding to the observation.
     """
+    try:
+        data = np.load(row.features)['cqt']
+    except IOError as derp:
+        print("Failed reading row: {}\n\n{}".format(row.to_dict(), derp))
+        raise derp
 
-    data = np.load(row.features)['cqt']
     num_obs = data.shape[1]
     # Break the remainder out into a subfunction for reuse with embedding
     # sampling.
