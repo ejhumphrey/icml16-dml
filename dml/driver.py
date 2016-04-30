@@ -85,8 +85,13 @@ def main(config, filename=''):
     # Snapshot this artifact.
     if filename:
         output_config = os.path.join(output_dir, filename)
-        with open(output_config, 'w') as fp:
-            yaml.dump(config, fp)
+        try:
+            with open(output_config, 'w') as fp:
+                yaml.dump(config, fp)
+        except TypeError as derp:
+            print("Saving config failed: {}\n\n{}"
+                  "".format(config, derp))
+
     return config
 
 
