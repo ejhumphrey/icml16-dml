@@ -1,0 +1,28 @@
+trial_name: "unittest"
+output_dir: "data/test_output"
+
+stream_params:
+  dataset: "data/test_indext.json"
+  neighbor_mode: "instrument"
+  batch_size: 10
+  working_size: 10
+  lam: 5
+
+model_params:
+  name: "nlse"
+  n_in: 4
+  n_out: 3
+  size: "small"
+  verbose: yes
+
+hyperparams:
+  learning_rate: 0.1
+  margin_same: 0.0
+  margin_diff: 1.0
+  origin_penalty: 0.01
+
+train_params:
+  max_iter: 500
+  save_freq: 100
+  print_freq: 50
+  nan_exceptions: 10
