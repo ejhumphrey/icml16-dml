@@ -10,6 +10,7 @@ $ python dml/driver.py \
 from __future__ import print_function
 
 import argparse
+import copy
 import optimus
 import os
 import pandas as pd
@@ -80,7 +81,7 @@ def main(config, filename=''):
     """
     output_dir = config['output_dir']
 
-    config.update(model_outputs=fit(**config.copy()))
+    config.update(model_outputs=fit(**copy.deepcopy(config)))
 
     # Snapshot this artifact.
     if filename:

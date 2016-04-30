@@ -12,10 +12,11 @@ train:
   output_dir: "/media/ejhumphrey/workspace/icml-dml/models"
   data_params:
     dataset: "/media/ejhumphrey/workspace/icml-dml/datasets/train.json"
-    neighbor_mode: "pitch"
+    neighbor_mode: "instrument-pitch"
     batch_size: 32
     working_size: 25
     lam: 20
+    pitch_delta: 0
 
   model_params:
     name: "nlse"
@@ -31,7 +32,7 @@ train:
     origin_penalty: 0.002
 
   train_params:
-    max_iter: 25000
+    max_iter: 5000
     save_freq: 500
-    print_freq: 50
+    print_freq: 100
     nan_exceptions: 10
