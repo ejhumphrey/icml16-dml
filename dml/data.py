@@ -93,13 +93,16 @@ def instrument_neighbors(dframe):
             for i in dframe.instrument.unique()}
 
 
-def pitch_neighbors(dframe):
+def pitch_neighbors(dframe, pitch_delta=0):
     """Create lists of instrument/pitch neighbors.
 
     Parameters
     ----------
     dframe : pd.DataFrame
         Dataframe of the sample index.
+
+    pitch_delta : int, default=0
+        Number of pitch values (plus/minus) for forming neighborhoods.
 
     Returns
     -------
@@ -108,6 +111,16 @@ def pitch_neighbors(dframe):
     """
     return {nn: dframe[dframe.note_number == nn].index.tolist()
             for nn in dframe.note_number.unique()}
+
+    # TODO: Keep this around in case pitch-only neighborhoods seems like a
+    # good idea. Currently, seems like this neighborhood might be too big?
+    # ------------------
+    # neighbors = dict()
+    # for nn in dframe.note_number.unique():
+    #     key = "{}".format(nn)
+    #     nidx = np.abs(dframe.note_number - nn) <= pitch_delta
+    #     neighbors[key] = dframe[nidx].index.tolist()
+    # return neighbors
 
 
 def instrument_pitch_neighbors(dframe, pitch_delta=0):
@@ -130,7 +143,7 @@ def instrument_pitch_neighbors(dframe, pitch_delta=0):
     for i in dframe.instrument.unique():
         for nn in dframe.note_number.unique():
             key = "{}_{}".format(i, nn)
-            nidx = np.abs(dframe.note_number - nn) <= 2
+            nidx = np.abs(dframe.note_number - nn) <= pitch_delta
             iidx = (dframe.instrument == i)
             c = (nidx & iidx).sum()
             if c > 0:
@@ -138,13 +151,13 @@ def instrument_pitch_neighbors(dframe, pitch_delta=0):
     return neighbors
 
 
-def slice_features(row, field, window_length):
+def slice_cqt(row, window_length):
     """Generate slices of CQT observations.
 
     Parameters
     ----------
     row : pd.Series
-        Row from a dataframe.
+        Row from a features dataframe.
 
     window_length : int
         Length of the CQT slice in time.
@@ -158,8 +171,10 @@ def slice_features(row, field, window_length):
         Metadata corresponding to the observation.
     """
 
-    data = np.load(row.features)[field]
+    data = np.load(row.features)['cqt']
     num_obs = data.shape[1] - window_length
+    # Break the remainder out into a subfunction for reuse with embedding
+    # sampling.
     idx = np.random.permutation(num_obs) if num_obs > 0 else None
     np.random.shuffle(idx)
     counter = 0
@@ -169,6 +184,7 @@ def slice_features(row, field, window_length):
     while num_obs > 0:
         n = idx[counter]
         obs = utils.padded_slice_ndarray(data, n, length=window_length, axis=1)
+        obs = obs[np.newaxis, ...]
         meta['idx'] = n
         yield obs, meta
         counter += 1
@@ -225,3 +241,52 @@ def neighbor_stream(neighbors, dataset, slice_func,
 # def class_stream2(dframe, n_in, batch_size, working_size=100, lam=20):
 
 #     return pescador.buffer_batch(stream, buffer_size=batch_size)
+
+NEIGHBORS = {
+    "instrument": instrument_neighbors,
+    "pitch": pitch_neighbors,
+    "instrument-pitch": instrument_pitch_neighbors
+}
+
+
+def create_stream(dataset, neighbor_mode, batch_size, window_length,
+                  working_size=25, lam=25, pitch_delta=0):
+    """Create a data stream.
+
+    Parameters
+    ----------
+    dataset : pd.DataFrame
+        Dataset to sample from.
+
+    neighbor_mode : str
+        One of ['instrument', 'pitch', 'instrument-pitch'].
+
+    batch_size : int
+        Number of datapoints in each batch.
+
+    window_length : int
+        Number of time frames per observation.
+
+    working_size : int, default=25
+        Number of samples to keep alive per neighborhood.
+
+    lam : number, default=25
+        Poisson parameter for refreshing a sample substream.
+
+    pitch_delta : int, default=0
+        Semitone distance for pitch neighbors.
+
+    Yields
+    ------
+    batch : dict
+        Input names mapped to np.ndarrays.
+    """
+    nb_kwargs = dict()
+    if neighbor_mode == 'instrument-pitch':
+        nb_kwargs['pitch_delta'] = pitch_delta
+
+    neighbors = NEIGHBORS.get(neighbor_mode)(dataset, **nb_kwargs)
+    stream = neighbor_stream(
+        neighbors, dataset, slice_func=slice_cqt, window_length=window_length,
+        lam=lam, working_size=working_size)
+    return pescador.buffer_batch(stream, buffer_size=batch_size)

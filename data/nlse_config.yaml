@@ -1,0 +1,28 @@
+trial_name: "deleteme"
+output_dir: "/media/ejhumphrey/workspace/icml-dml/models"
+
+stream_params:
+  dataset: "/media/ejhumphrey/workspace/icml-dml/datasets/train0.json"
+  neighbor_mode: "instrument"
+  batch_size: 32
+  working_size: 25
+  lam: 20
+
+model_params:
+  name: "nlse"
+  n_in: 10
+  n_out: 3
+  size: "large"
+  verbose: yes
+
+hyperparams:
+  learning_rate: 0.1
+  margin_same: 0.0
+  margin_diff: 1.0
+  origin_penalty: 0.01
+
+train_params:
+  max_iter: 5000
+  save_freq: 500
+  print_freq: 50
+  nan_exceptions: 10
