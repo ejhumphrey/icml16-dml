@@ -84,21 +84,21 @@ def nlse_iX_c3f2_oY(n_in, n_out, size='large', verbose=False):
         input_shape=x_in.shape,
         weight_shape=(k0, None, n0, 13),
         pool_shape=(p0, 1),
-        act_type='relu')
+        act_type='tanh')
 
     layer1 = optimus.Conv3D(
         name='layer1',
         input_shape=layer0.output.shape,
         weight_shape=(k1, None, n1, 11),
         pool_shape=(p1, 1),
-        act_type='relu')
+        act_type='tanh')
 
     layer2 = optimus.Conv3D(
         name='layer2',
         input_shape=layer1.output.shape,
         weight_shape=(k2, None, n2, 9),
         pool_shape=(p2, 1),
-        act_type='relu')
+        act_type='tanh')
 
     layer3 = optimus.Affine(
         name='layer3',
