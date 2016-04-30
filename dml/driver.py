@@ -33,6 +33,9 @@ def fit(trial_name, output_dir, model_params, hyperparams,
     artifacts : dict
         Contains data resulting from fitting the model.
     """
+    output_dir = os.path.join(output_dir, trial_name)
+    utils.safe_makedirs(output_dir)
+
     trainer, predictor = M.create(**model_params)
 
     data_params.update(
@@ -76,9 +79,8 @@ def main(config, filename=''):
         Updated config file.
     """
     output_dir = config['output_dir']
-    utils.safe_makedirs(output_dir)
 
-    config.update(model_outputs=fit(**config))
+    config.update(model_outputs=fit(**config.copy()))
 
     # Snapshot this artifact.
     if filename:
