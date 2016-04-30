@@ -123,7 +123,7 @@ def pitch_neighbors(dframe, pitch_delta=0):
     # return neighbors
 
 
-def instrument_pitch_neighbors(dframe, pitch_delta=0):
+def instrument_pitch_neighbors(dframe, pitch_delta=0, min_population=10):
     """Create lists of instrument/pitch neighbors.
 
     Parameters
@@ -146,7 +146,7 @@ def instrument_pitch_neighbors(dframe, pitch_delta=0):
             nidx = np.abs(dframe.note_number - nn) <= pitch_delta
             iidx = (dframe.instrument == i)
             c = (nidx & iidx).sum()
-            if c > 0:
+            if c > min_population:
                 neighbors[key] = dframe[nidx & iidx].index.tolist()
     return neighbors
 

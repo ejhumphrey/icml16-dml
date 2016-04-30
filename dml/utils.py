@@ -25,8 +25,10 @@ def slice_tile(x_in, idx, length):
     ----------
     x_in : np.ndarray, ndim=2
         2D Matrix to slice.
+
     idx : int
         Centered index for the resulting tile.
+
     length : int
         Total length for the output tile.
 
@@ -82,12 +84,16 @@ def padded_slice_ndarray(x_in, idx, length, axis=0):
     ----------
     x_in : np.ndarray
         Array to slice.
+
     idx : int, 0 < n < x_in.shape[axis]
         Centered index for the resulting tile.
+
     length : int
         Total length for the output tile.
+
     axis : int, default=0
         Axis over which to slice the ndarray.
+
     Returns
     -------
     z_out : np.ndarray
