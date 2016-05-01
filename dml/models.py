@@ -1,4 +1,10 @@
 import optimus
+import os
+import pandas as pd
+import numpy as np
+import time
+
+import dml.utils
 
 GRAPH_NAME = "nlse"
 
@@ -215,3 +221,91 @@ MODELS = {
 
 def create(name, **kwargs):
     return MODELS.get(name)(**kwargs)
+
+
+def convolve(data, graph, axis=1, chunk_size=250):
+    """Apply a graph convolutionally to an input tensor.
+
+    Parameters
+    ----------
+    data : np.ndarray
+        Single input for the graph to process.
+
+    graph : optimus.Graph
+        Network for processing an entity.
+
+    data_key : str
+        Name of the field to use for the input.
+
+    chunk_size : int, default=None
+        Number of slices to transform in a given step. When None, parses one
+        slice at a time.
+
+    Returns
+    -------
+    outputs : dict
+        Result of the graph transform
+    """
+    # TODO(ejhumphrey): Make this more stable, somewhat fragile as-is
+    time_dim = graph.inputs.values()[0].shape[2]
+
+    input_stepper = optimus.array_stepper(
+        data, time_dim, axis=axis, mode='same')
+
+    results = dict([(k, list()) for k in graph.outputs])
+    if chunk_size:
+        chunk = []
+        for x in input_stepper:
+            chunk.append(x)
+            if len(chunk) == chunk_size:
+                for k, v in graph(np.array(chunk)).items():
+                    results[k].append(v)
+                chunk = []
+        if len(chunk):
+            for k, v in graph(np.array(chunk)).items():
+                results[k].append(v)
+    else:
+        for x in input_stepper:
+            for k, v in graph(x[np.newaxis, ...]).items():
+                results[k].append(v)
+
+    for k in results:
+        results[k] = np.concatenate(results[k], axis=0)
+
+    return results
+
+
+def transform_dataset(dataset, graph, output_dir, verbose=True, axis=1):
+    """Apply an optimus graph to all rows in a dataframe, producing an updated
+    dataframe.
+
+    Parameters
+    ----------
+    dataset : pd.DataFrame
+        Collection of data to process.
+
+    graph : optimus.Graph
+        Network to apply to each row.
+
+    output_dir : str
+        Directory under which to write outputs.
+
+    input_key : str
+        Name of the field to use for the input.
+    """
+    dml.utils.safe_makedirs(output_dir)
+
+    total_count = len(dataset)
+    predictions = []
+    for n, (idx, row) in enumerate(dataset.iterrows()):
+        data = np.load(row.features)['cqt']
+        outputs = convolve(data, graph, axis=axis)
+        output_file = os.path.join(output_dir, "{}.npz".format(row.key))
+        np.savez(output_file, **outputs)
+        predictions += [output_file]
+        if verbose:
+            print("[{0}] {1:7} / {2:7}: {3}".format(
+                  time.asctime(), n, total_count, row.key))
+
+    dataset['prediction'] = predictions
+    return dataset

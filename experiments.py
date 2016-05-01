@@ -1,9 +1,12 @@
 import argparse
+import optimus
 import os
+import pandas as pd
 import yaml
 
 import dml.data
 import dml.driver
+import dml.models
 import dml.utils
 
 
@@ -40,7 +43,14 @@ def validate(config):
 
 
 def predict(config):
-    pass
+    kwargs = config['predict']
+    graph = optimus.load(kwargs['model_file'], kwargs['param_file'])
+    dataset = pd.read_json(kwargs['index_file'])
+    new_dataset = dml.models.transform_dataset(
+        dataset, graph, kwargs['output_dir'])
+    output_file = os.path.join(kwargs['output_dir'], "output_index.json")
+    new_dataset.to_json(output_file)
+    return new_dataset
 
 
 def score(config):
