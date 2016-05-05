@@ -104,24 +104,25 @@ Acoustic similarity is a natural application of manifold learning, which attempt
 Common embedding methods, such as Multidimensional Scaling (MDS) \cite{}, Locally Linear Embedding (LLE) \cite{}, or Isomap \cite{}, respect pairwise distances between observations, but exhibit two drawbacks in practice.
 First, these methods do not yield generalizable mappings that can be readily applied to previously unseen inputs.
 Second, and perhaps more importantly, obtaining accurate pairwise distances for a large collection of inputs is not scalable to large datasets.
-Rank-order methods, like WSABIE \cite{weston2011wsabie}, relax the constraint of precise distance in favor of preserving similarity ordering within a collection.
-This is a slightly easier task, but it may still be necessary to establish a prohibitive number of pairwise comparisons.
+Rank-order methods, like WSABIE \cite{weston2011wsabie}, relax this constraint in favor of maintaining relevance ordering within a collection.
+This is a slightly easier formulation, but it may still be necessary to establish a prohibitive number of pairwise comparisons.
 Finally, neighborhood methods, such as neighborhood components analysis (NCA) \cite{hinton2004neighborhood} (probabilistic neighbors), DrLIM \cite{hadsell2006drlim}, or \texttt{word2vec} (contextual ``neighbors'') \cite{mikolov2013distributed}, simplifiy this further exploiting unordered set relationships.
 Neighborhoods need not be exhaustive and thus may be easier to obtain, especially from large datasets, or be defined by coarse \emph{a priori} knowledge, \emph{e.g.} descriptive tags.
 Notably, prior work has demonstrated the potential for such methods to yield intutitive representations, where algebraic operations on vectors encode physical orientation \cite{hadsell2006drlim} or analogy \cite{mikolov2013efficient}.
 
-
-What manifolds exist in the data, and how can we form neighborhood relationships to coax them out?
-We want to learn low-dimensional representations for visualization and browsing of audio samples for creative purposes.
-Discovering latent manifolds and different kinds of projections can help users intuitively make sense of large data collection.
-Expanding on previous research applying deep networks to the task of timbre similarity \cite{humphrey2015dl4mir}, this work explores the effects of leveraging different neighborhood relationships within a stable formulation.
+Synthesizing these two topics, we explore the potential of neighborhood-based ``deep'' manifold learning with a large collection of instrument sounds for developing intuitive acoustic representations.
+Different kinds of neighborhoods are easy to draw from data, and we are curious to examine the different mappings they produce.
+Deep networks provide a general framework in which relevant features and a smoothly interpolated space can be learned.
+Feature learning is particularly important for acoustic similarity, as the perceptual quality of ``timbre'' remains an ill-defined concept.
+Finally, we evaluate the intuitive nature of the learned representations through both quantitative and qualitative means to identify any projections might prove useful in making sense of large sound collections.
+% , this work explores the effects of leveraging different neighborhood relationships
 % Therefore we are interested primarily in how these partitions are defined and sampled during training.
 
 
 
 \section{Method}
 
-Here we approach acoustic similarity by attempting to maintain contrasting set relationships, \emph{i.e.} neighborhoods, between samples in a low-dimensional metric space.
+We approach acoustic similarity by attempting to maintain contrasting set relationships, \emph{i.e.} neighborhoods, between samples in a low-dimensional metric space.
 Given a collection of observations, $\mathcal{D}$, a contrastive parition, $k$, consists of a positive, $\Gamma_k$, and a negative, $\bar{\Gamma_k}$, subset, satisfying three conditions:
 one, contrastive partitions are internally disjoint, $\Gamma_k \cap \bar{\Gamma_k} = \varnothing$;
 two, contrastive partitions may comprise a subset of the entire collection, $|\Gamma_k \cup \bar{\Gamma_k}| \le |\mathcal{D}|$;
@@ -144,11 +145,11 @@ The first four layers use hyperbolic tangent activation functions, while the las
 The final output is 3-dimensional for the purposes of visualization.
 
 
-\subsection{Learning a Metric Space}
+\subsection{Learning a Mapping into Metric Space}
 
 % Loss architecture
-Similar to some work in the application of deep networks for metric learning \cite{hadsell2006drlim, humphrey2011nlse, humphrey2015dl4mir}, we use a contrastive loss term to draw neighborhoods together and push dissimilar observations away.
-However, we augment training criterion to use a ternary network configuration, rather than the pairwise harness employed previously, defined as follows:
+Following previous research in deep manifold learning \cite{hadsell2006drlim, humphrey2011nlse, humphrey2015dl4mir}, we use a contrastive loss function for optimizing the model's parameters.
+However, we augment training criterion to use a ternary network configuration, rather than the pairwise one employed previously, defined as follows:
 
 % loss_sim = hwr(cost_sim - margin_sim)^2
 % loss_diff = hwr(margin_diff - cost_diff)^2
@@ -162,16 +163,18 @@ D_p = || Z_i - Z_p ||_2, D_n = || Z_i - Z_n ||_2\\
 Here, three inputs -- $X_i, X_p, X_n$ -- are transformed by the model, $\mathcal{F}$, given the same parameters, $\Theta$.
 These observations are chosen such that $X_i, X_p \in \Gamma_k$ and $X_n \in \bar{\Gamma_k}$.
 Euclidean distance is computed between the positive and negative embedding pairs, and two margins, $m_p$ and $m_n$, define a floor on the positive and negative loss terms.
+
 This loss is computed over a mini-batch of observations, differentiated with respect to the parameters of model, and back-propagated through the network via simple stochastic gradient descent.
+We use mini-batches of 32 triples, and training proceeds for 50k iterations.
 
 \subsection{Data}
 
 The data source used herein is drawn from the Vienna Symphonic Library (VSL), a massive collection of studio-grade orchestral instrument samples recorded over a variety of performance techniques\footnote{\url{https://vsl.co.at/en}}.
-We leverage a previously sampled collection \cite{humphrey2015dl4mir}, comprised of 5k samples drawn from 24 of the largest instrument classes.
+We leverage a previously compiled collection \cite{humphrey2015dl4mir}, comprised of 5k samples drawn from 24 of the largest instrument classes.
 The set is partitioned into 72k, 18k, and 30k for training, validation, and testing, respectively.
 
 As discussed above, the crux of this exploration lies in \emph{how} neighborhoods are defined and sampled for training.
-We consider a number of options in order to explore what manifolds or behaviors might reveal themselves in the data:
+We consider a number of types in the hopes that different behaviors might reveal themselves in the data:
 (1) nearest neighbors in the input space;
 (2) instrument class;
 (3) absolute pitch;
@@ -181,9 +184,20 @@ We consider a number of options in order to explore what manifolds or behaviors 
 % \item Instrument class and pitch chroma
 
 
-\section{Experimental Results}
+\section{Evaluation}
 
-All training runs proceed for 50k iterations.
+We take three angles.
+Nearest neighbor classification to explore the degree to which neighborhoods were preserved.
+Nearest neighbor analysis quantitatively show the defined partitions are preserved.
+
+Visualization
+Interpretable embeddings.
+Follow trajectories of sounds in 3-space.
+ADSR
+
+Sonification.
+Concatenative synthesis, qualitative analysis.
+
 
 
 % \begin{figure}[ht]
@@ -200,30 +214,12 @@ All training runs proceed for 50k iterations.
 % \vskip -0.2in
 % \end{figure}
 
-% Quantitative
-Interpretable embeddings.
-Nearest neighbor analysis quantitatively show the defined partitions are preserved.
-
-% Qualitative
-Follow trajectories of sounds in 3-space.
-Concatenative synthesis, qualitative analysis.
-
 
 
 \section{Conclusions}
 
-We have explored
-
-
-Number figures sequentially, placing the figure number and caption
-{\it after\/} the graphics, with at least 0.1~inches of space before
-the caption and 0.1~inches after it, as in
-Figure~\ref{icml-historical}.  The figure caption should be set in
-9~point type and centered unless it runs two or more lines, in which
-case it should be flush left.  You may float figures to the top or
-bottom of a column, and you may set wide figures across both columns
-(use the environment {\tt figure*} in \LaTeX), but always place
-two-column figures at the top or bottom of the page.
+We have explored a range of embeddings learned using a single model and considering various neighborhood relationships.
+Interesting to
 
 
 % Acknowledgements should only appear in the accepted version.
