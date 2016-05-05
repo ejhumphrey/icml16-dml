@@ -186,17 +186,20 @@ We consider a number of types in the hopes that different behaviors might reveal
 
 \section{Evaluation}
 
-We take three angles.
-Nearest neighbor classification to explore the degree to which neighborhoods were preserved.
-Nearest neighbor analysis quantitatively show the defined partitions are preserved.
+Given various learned mappings, there are a number of ways in which we can assess the ``quality'' of the resulting representation.
+% Neighbors
+Having trained the mappings on neighborhood relationships, we use $k$-nearest neighbor classification as a quantitative approach to measure the extent to which this is preserved.
+Consistent with previous results \cite{humphrey2011nlse, humphrey2015dl4mir}, the sharpness of class boundaries is inversely to the discrete number of neighborhoods, and is likely due in part to the limits of three-space.
+Regardless, the learned representations consistently demonstrate solid performance in ranked retrieval settings.
+% Analogy
+We can additionally test the space for acoustic ``analogy'', where the resultant vector between two points is added to a third.
+Though inherently subjective, this approach is enticing as a new mode of acoustic search.
 
-Visualization
-Interpretable embeddings.
+%Visualization
+Can we visually interpretable embeddings?
 Follow trajectories of sounds in 3-space.
 ADSR
-
-Sonification.
-Concatenative synthesis, qualitative analysis.
+Sonification, concatenative synthesis.
 
 
 
@@ -216,9 +219,9 @@ Concatenative synthesis, qualitative analysis.
 
 
 
-\section{Conclusions}
+\section{Summary}
 
-We have explored a range of embeddings learned using a single model and considering various neighborhood relationships.
+We have explored a range of embeddings learned using a convolutional neural network optimized to preserve various neighborhood relationships between instrument sounds in 3 dimensions.
 Interesting to
 
 
