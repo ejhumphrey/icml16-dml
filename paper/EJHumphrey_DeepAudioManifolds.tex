@@ -78,7 +78,7 @@
 \begin{abstract}
 
 Finding sound for creative purposes is hard because it can be difficult to frame good queries.
-% Meta data is sparse, language specific, vocabulary mappings are weird, and ranked
+
 Use data to learn low-dimensional representations for visualization and browsing, discover latent manifolds in the data.
 
 
@@ -87,45 +87,46 @@ Use data to learn low-dimensional representations for visualization and browsing
 \section{Introduction}
 \label{submission}
 
-We want to learn low-dimensional representations for visualization and browsing of audio samples for creative purposes.
-Discovering latent manifolds and different kinds of projections can help users intuitively make sense of large data collection.
+% A query for ``voice'' returns over 19k results on FreeSound, a collaborative database of audio clips.
 
-% While many computational approaches have proven useful for various classification or recognition tasks, none directly result in a notion of timbre similarity, a useful concept with a variety of applications.
-% % Search with sound; avoids the challenge of articulating queries linguistically.
-% One notable instance is the difficulty faced in the search and navigation of large sound sample libraries.
-% Queries are predominantly forced to take the form of text, which is problematic for at least two reasons.
-% On one hand, it can challenging to describe a specific query semantically, and often metaphors and figurative language are used to relate the experience of a sound;
-% a distorted guitar might be referred to as `crunchy', or a trumpet as `bright.'
-% Conversely, this kind of descriptive language is far from standardized and varies in meaning from one individual to the next.
+Navigating large audio sample libraries has long been a pain point for musicians and sound artists alike.
+Search
+% and retrieval is an especially acute problem for sound, as
+queries are predominantly forced to take the form of text, which is problematic for at least two reasons.
+Metaphors and descriptive tags, when provided, struggle to capture important characteristics in sufficient detail, and this language often varies from one individual to the next.
+Alternatively, standard approaches to sound visualization -- waveform envelopes or spectrograms -- are hardly intuitive for the general population.
 % Furthermore, such descriptions are not always associated with every sound in a collection, and typically only at the granularity of the entire recording.
 % As a result, the task of navigating a sound library is often reduced to that of an exhaustive, brute force search.
+As a result, the development of computational systems for acoustic similarity, an elusive concept in its own right, remains an open research topic.
 
-
-This is a natural application of manifold learning, which typically attempts to preserve one of three relationships in some lower dimensional space: distance, rank-order, or neighborhoods.
-Common embedding methods, such as Multidimensional Scaling (MDS) \cite{}, Locally Linear Embedding (LLE) \cite{}, or Isomap \cite{}, adhere to the former, but exhibit two drawbacks in practice.
+% The link between ^ and v isn't stellar.
+Acoustic similarity is a natural application of manifold learning, which attempts to preserve relationships in some lower dimensional, metric space, typically for visualization.
+Common embedding methods, such as Multidimensional Scaling (MDS) \cite{}, Locally Linear Embedding (LLE) \cite{}, or Isomap \cite{}, respect pairwise distances between observations, but exhibit two drawbacks in practice.
 First, these methods do not yield generalizable mappings that can be readily applied to previously unseen inputs.
 Second, and perhaps more importantly, obtaining accurate pairwise distances for a large collection of inputs is not scalable to large datasets.
-Rank-ordered embeddings, such as WSABIE \cite{weston2011wsabie}, relax the constraint of precise distance in favor of sorted observations.
+Rank-order methods, like WSABIE \cite{weston2011wsabie}, relax the constraint of precise distance in favor of preserving similarity ordering within a collection.
 This is a slightly easier task, but it may still be necessary to establish a prohibitive number of pairwise comparisons.
-Finally, neighborhood methods, such as neighborhood components analysis (NCA) \cite{hinton2004neighborhood}, DrLIM \cite{hadsell2006drlim}, or \texttt{word2vec} \cite{mikolov2013distributed}, simplifiy this further exploiting unordered set relationships.
-% \footnote{NCA uses neighbor affinity, which has a similar affect to preserving distances.}
-Neighbor relationships between data need not be exhaustive and thus may be easier to obtain, especially from large datasets, or be defined by \emph{a priori} knowledge, \emph{e.g.} class labels.
-Notably, prior work has aptly demonstrated the potential for such methods to yield intutitive low-dimensional spaces.
+Finally, neighborhood methods, such as neighborhood components analysis (NCA) \cite{hinton2004neighborhood} (probabilistic neighbors), DrLIM \cite{hadsell2006drlim}, or \texttt{word2vec} (contextual ``neighbors'') \cite{mikolov2013distributed}, simplifiy this further exploiting unordered set relationships.
+Neighborhoods need not be exhaustive and thus may be easier to obtain, especially from large datasets, or be defined by coarse \emph{a priori} knowledge, \emph{e.g.} descriptive tags.
+Notably, prior work has demonstrated the potential for such methods to yield intutitive representations, where algebraic operations on vectors encode physical orientation \cite{hadsell2006drlim} or analogy \cite{mikolov2013efficient}.
 
-% Local discrimination and non-linear mappings.
+
+What manifolds exist in the data, and how can we form neighborhood relationships to coax them out?
+We want to learn low-dimensional representations for visualization and browsing of audio samples for creative purposes.
+Discovering latent manifolds and different kinds of projections can help users intuitively make sense of large data collection.
 Expanding on previous research applying deep networks to the task of timbre similarity \cite{humphrey2015dl4mir}, this work explores the effects of leveraging different neighborhood relationships within a stable formulation.
 % Therefore we are interested primarily in how these partitions are defined and sampled during training.
-What manifolds exist in the data, and how can we form neighborhood relationships to coax them out?
 
 
-\section{Approach}
 
-Here we study a class of manifold learning algorithms that aims to preserve or establish contrasting set relationships, \emph{i.e.} neighborhoods, in a low-dimensional space.
+\section{Method}
+
+Here we approach acoustic similarity by attempting to maintain contrasting set relationships, \emph{i.e.} neighborhoods, between samples in a low-dimensional metric space.
 Given a collection of observations, $\mathcal{D}$, a contrastive parition, $k$, consists of a positive, $\Gamma_k$, and a negative, $\bar{\Gamma_k}$, subset, satisfying three conditions:
 one, contrastive partitions are internally disjoint, $\Gamma_k \cap \bar{\Gamma_k} = \varnothing$;
 two, contrastive partitions may comprise a subset of the entire collection, $|\Gamma_k \cup \bar{\Gamma_k}| \le |\mathcal{D}|$;
 and three, contrastive partitions are drawn independently of each other, such that any two partitions, $i$ and $j$, may share observations, $|\Gamma_i \cap \Gamma_j| \ge 0$.
-This is achived by leveraging a parameterized, non-linear function, \emph{e.g.} a convolutional neural network, that maps high dimensional data into the target embedding space.
+This is achived by leveraging a parameterized, non-linear function, \emph{e.g.} a convolutional neural network, that maps high dimensional data, \emph{i.e.} audio, into the target embedding space.
 The parameters are optimized to make the distance of neighbors small and non-neighbors large, and the resulting model can then be evaluated on a hold-out set.
 
 
@@ -140,10 +141,10 @@ Logarithmic compression is applied to the frequency coefficients with an offset 
 Following the work presented in \cite{humphrey2015dl4mir}, 500ms windows of time-frequency coefficients are transformed by a five-layer convolutional neural network, consisting of three 3D-convolutional layers and two fully connected layers.
 Max-pooling by a factor of 2 is used along time in first two layers.
 The first four layers use hyperbolic tangent activation functions, while the last layer is linear to avoid saturation.
-The final output is 3-dimensional for visualization purposes.
+The final output is 3-dimensional for the purposes of visualization.
 
 
-\subsection{Training Strategy}
+\subsection{Learning a Metric Space}
 
 % Loss architecture
 Similar to some work in the application of deep networks for metric learning \cite{hadsell2006drlim, humphrey2011nlse, humphrey2015dl4mir}, we use a contrastive loss term to draw neighborhoods together and push dissimilar observations away.
@@ -161,6 +162,7 @@ D_p = || Z_i - Z_p ||_2, D_n = || Z_i - Z_n ||_2\\
 Here, three inputs -- $X_i, X_p, X_n$ -- are transformed by the model, $\mathcal{F}$, given the same parameters, $\Theta$.
 These observations are chosen such that $X_i, X_p \in \Gamma_k$ and $X_n \in \bar{\Gamma_k}$.
 Euclidean distance is computed between the positive and negative embedding pairs, and two margins, $m_p$ and $m_n$, define a floor on the positive and negative loss terms.
+This loss is computed over a mini-batch of observations, differentiated with respect to the parameters of model, and back-propagated through the network via simple stochastic gradient descent.
 
 \subsection{Data}
 
