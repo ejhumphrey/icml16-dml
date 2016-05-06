@@ -90,9 +90,7 @@ Use data to learn low-dimensional representations for visualization and browsing
 % A query for ``voice'' returns over 19k results on FreeSound, a collaborative database of audio clips.
 
 Navigating large audio sample libraries has long been a pain point for musicians and sound artists alike.
-Search
-% and retrieval is an especially acute problem for sound, as
-queries are predominantly forced to take the form of text, which is problematic for at least two reasons.
+Search queries are predominantly forced to take the form of text, which is problematic for at least two reasons.
 Metaphors and descriptive tags, when provided, struggle to capture important characteristics in sufficient detail, and this language often varies from one individual to the next.
 Alternatively, standard approaches to sound visualization -- waveform envelopes or spectrograms -- are hardly intuitive for the general population.
 % Furthermore, such descriptions are not always associated with every sound in a collection, and typically only at the granularity of the entire recording.
@@ -100,21 +98,22 @@ Alternatively, standard approaches to sound visualization -- waveform envelopes 
 As a result, the development of computational systems for acoustic similarity, an elusive concept in its own right, remains an open research topic.
 
 % The link between ^ and v isn't stellar.
-Acoustic similarity is a natural application of manifold learning, which attempts to preserve relationships in some lower dimensional, metric space, typically for visualization.
-Common embedding methods, such as Multidimensional Scaling (MDS) \cite{}, Locally Linear Embedding (LLE) \cite{}, or Isomap \cite{}, respect pairwise distances between observations, but exhibit two drawbacks in practice.
-First, these methods do not yield generalizable mappings that can be readily applied to previously unseen inputs.
-Second, and perhaps more importantly, obtaining accurate pairwise distances for a large collection of inputs is not scalable to large datasets.
-Rank-order methods, like WSABIE \cite{weston2011wsabie}, relax this constraint in favor of maintaining relevance ordering within a collection.
-This is a slightly easier formulation, but it may still be necessary to establish a prohibitive number of pairwise comparisons.
-Finally, neighborhood methods, such as neighborhood components analysis (NCA) \cite{hinton2004neighborhood} (probabilistic neighbors), DrLIM \cite{hadsell2006drlim}, or \texttt{word2vec} (contextual ``neighbors'') \cite{mikolov2013distributed}, simplifiy this further exploiting unordered set relationships.
-Neighborhoods need not be exhaustive and thus may be easier to obtain, especially from large datasets, or be defined by coarse \emph{a priori} knowledge, \emph{e.g.} descriptive tags.
-Notably, prior work has demonstrated the potential for such methods to yield intutitive representations, where algebraic operations on vectors encode physical orientation \cite{hadsell2006drlim} or analogy \cite{mikolov2013efficient}.
+Acoustic similarity is a natural use case for manifold learning, which attempts to preserve relationships in some low dimensional space, typically for visualization.
+Common embedding methods, such as Multidimensional Scaling (MDS) \cite{}, Locally Linear Embedding (LLE) \cite{}, or Isomap \cite{}, respect pairwise distances between observations, but exhibit two practical drawbacks:
+these methods do not yield general functions that can be applied to new data, and obtaining accurate pairwise distances for large datasets is not scalable.
+Ranking methods, like WSABIE \cite{weston2011wsabie}, relax this constraint in favor of maintaining relative order between observations, but these nuanced relationships can still be hard to obtain at scale.
+Neighborhood methods, such as neighborhood components analysis (NCA) \cite{hinton2004neighborhood} (probabilistic neighbors), DrLIM \cite{hadsell2006drlim}, or \texttt{word2vec} (contextual ``neighbors'') \cite{mikolov2013distributed}, simplifiy the problem even further by exploiting unordered set relationships.
+Rather than placing the burden of continuity on the data, neighborhood methods task the model with smoothly interpolating discrete sets in the embedding space.
+ % easier to obtain, especially from large datasets, or be defined by coarse \emph{a priori} knowledge, \emph{e.g.} descriptive tags.
+Prior work has demonstrated the potential for such methods to yield intutitive representations, where algebraic operations on vectors encode physical orientation \cite{hadsell2006drlim} or analogy \cite{mikolov2013efficient}.
 
 Synthesizing these two topics, we explore the potential of neighborhood-based ``deep'' manifold learning with a large collection of instrument sounds for developing intuitive acoustic representations.
-Different kinds of neighborhoods are easy to draw from data, and we are curious to examine the different mappings they produce.
-Deep networks provide a general framework in which relevant features and a smoothly interpolated space can be learned.
-Feature learning is particularly important for acoustic similarity, as the perceptual quality of ``timbre'' remains an ill-defined concept.
-Finally, we evaluate the intuitive nature of the learned representations through both quantitative and qualitative means to identify any projections might prove useful in making sense of large sound collections.
+% Different kinds of neighborhoods are easy to draw from data, and we are curious to examine the different mappings they produce.
+Deep neural networks provide a general framework for learning functions that map high dimensional data into useful embeddings, which we influence by considering different kinds of relationships between inputs.
+% Feature learning is particularly important for acoustic similarity, as the perceptual quality of ``timbre'' remains an ill-defined concept.
+The behavior of the resulting embeddings is evaluated through both quantitative and qualitative means, yielding a variety of insights and interesting multimedia examples.
+
+ % to identify any projections might prove useful in making sense of large sound collections.
 % , this work explores the effects of leveraging different neighborhood relationships
 % Therefore we are interested primarily in how these partitions are defined and sampled during training.
 
