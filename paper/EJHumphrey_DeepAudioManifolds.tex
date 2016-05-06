@@ -77,9 +77,9 @@
 
 \begin{abstract}
 
-Finding sound for creative purposes is hard because it can be difficult to frame good queries.
-
-Use data to learn low-dimensional representations for visualization and browsing, discover latent manifolds in the data.
+Use data to learn low-dimensional representations of acoustic similarity for visualization and browsing, discover latent manifolds in the data.
+We present an approach leveraging different neighborhood relationships drawn between a large collection of instrument samples.
+Describe insights and produce a number of examples that illustrate the behaviors induced by this approach.
 
 
 \end{abstract}
@@ -102,16 +102,16 @@ Acoustic similarity is a natural use case for manifold learning, which attempts 
 Common embedding methods, such as Multidimensional Scaling (MDS) \cite{}, Locally Linear Embedding (LLE) \cite{}, or Isomap \cite{}, respect pairwise distances between observations, but exhibit two practical drawbacks:
 these methods do not yield general functions that can be applied to new data, and obtaining accurate pairwise distances for large datasets is not scalable.
 Ranking methods, like WSABIE \cite{weston2011wsabie}, relax this constraint in favor of maintaining relative order between observations, but these nuanced relationships can still be hard to obtain at scale.
-Neighborhood methods, such as neighborhood components analysis (NCA) \cite{hinton2004neighborhood} (probabilistic neighbors), DrLIM \cite{hadsell2006drlim}, or \texttt{word2vec} (contextual ``neighbors'') \cite{mikolov2013distributed}, simplifiy the problem even further by exploiting unordered set relationships.
+Neighborhood methods, such as neighborhood components analysis (NCA) \cite{hinton2004neighborhood}, DrLIM \cite{hadsell2006drlim}, or \texttt{word2vec} \cite{mikolov2013distributed}, simplifiy the problem even further by exploiting unordered set relationships. %\footnote{Both NCA and word2vec can be understood as neighborhood methods, with probabilistic and context-driven interpretations.}
 Rather than placing the burden of continuity on the data, neighborhood methods task the model with smoothly interpolating discrete sets in the embedding space.
  % easier to obtain, especially from large datasets, or be defined by coarse \emph{a priori} knowledge, \emph{e.g.} descriptive tags.
 Prior work has demonstrated the potential for such methods to yield intutitive representations, where algebraic operations on vectors encode physical orientation \cite{hadsell2006drlim} or analogy \cite{mikolov2013efficient}.
 
 Synthesizing these two topics, we explore the potential of neighborhood-based ``deep'' manifold learning with a large collection of instrument sounds for developing intuitive acoustic representations.
 % Different kinds of neighborhoods are easy to draw from data, and we are curious to examine the different mappings they produce.
-Deep neural networks provide a general framework for learning functions that map high dimensional data into useful embeddings, which we influence by considering different kinds of relationships between inputs.
+Deep neural networks provide a general framework for learning functions that map high-dimensional data into useful embeddings, which we influence by considering different kinds of relationships between inputs.
 % Feature learning is particularly important for acoustic similarity, as the perceptual quality of ``timbre'' remains an ill-defined concept.
-The behavior of the resulting embeddings is evaluated through both quantitative and qualitative means, yielding a variety of insights and interesting multimedia examples.
+The behavior of the resulting embeddings is evaluated through both quantitative and qualitative means, yielding a variety of insights and audio-visual examples.
 
  % to identify any projections might prove useful in making sense of large sound collections.
 % , this work explores the effects of leveraging different neighborhood relationships
@@ -121,13 +121,12 @@ The behavior of the resulting embeddings is evaluated through both quantitative 
 
 \section{Method}
 
-We approach acoustic similarity by attempting to maintain contrasting set relationships, \emph{i.e.} neighborhoods, between samples in a low-dimensional metric space.
-Given a collection of observations, $\mathcal{D}$, a contrastive parition, $k$, consists of a positive, $\Gamma_k$, and a negative, $\bar{\Gamma_k}$, subset, satisfying three conditions:
+We approach acoustic similarity by optimizing the parameters of a deep neural network to maximally preserve $K$ contrasting set relationships, \emph{i.e.} neighborhoods, between samples in a low-dimensional Euclidean space.
+Given a collection of observations, $\mathcal{D}$, the $k^{th}$ contrastive parition consists of a positive, $\Gamma_k$, and a negative, $\bar{\Gamma_k}$, subset, satisfying three conditions:
 one, contrastive partitions are internally disjoint, $\Gamma_k \cap \bar{\Gamma_k} = \varnothing$;
 two, contrastive partitions may comprise a subset of the entire collection, $|\Gamma_k \cup \bar{\Gamma_k}| \le |\mathcal{D}|$;
 and three, contrastive partitions are drawn independently of each other, such that any two partitions, $i$ and $j$, may share observations, $|\Gamma_i \cap \Gamma_j| \ge 0$.
-This is achived by leveraging a parameterized, non-linear function, \emph{e.g.} a convolutional neural network, that maps high dimensional data, \emph{i.e.} audio, into the target embedding space.
-The parameters are optimized to make the distance of neighbors small and non-neighbors large, and the resulting model can then be evaluated on a hold-out set.
+Thus, the network can be understood as interpolating the various discrete partitions, with the training objective finding a smooth compromise between them.
 
 
 \subsection{Model}
@@ -136,42 +135,40 @@ Audio is first transformed to a constant-Q representation, parameterized as foll
 signals are downsampled to 16kHz;
 bins are spaced at 24 per octave, or quarter-tone resolution, and span eight octaves, from 27.5Hz to 7040Hz;
 analysis is performed at a framerate of 20Hz uniformly across all frequency bins.
-Logarithmic compression is applied to the frequency coefficients with an offset of one, i.e. $log(C*X + 1.0)$, where we set $C=50$.
+Logarithmic compression is applied to the frequency coefficients with an offset of one, i.e. $log(C*X + 1.0)$, where $C=50$.
 
-Following the work presented in \cite{humphrey2015dl4mir}, 500ms windows of time-frequency coefficients are transformed by a five-layer convolutional neural network, consisting of three 3D-convolutional layers and two fully connected layers.
-Max-pooling by a factor of 2 is used along time in first two layers.
+Keeping with related work \cite{humphrey2015dl4mir}, windows of time-frequency coefficients are transformed by a five-layer convolutional neural network (CNN) into a 3-dimensional embedding for the purposes of visualization.
+The network consists of three 3D-convolutional layers and two fully connected layers, with max-pooling by a factor of 2 in time for first two layers.
 The first four layers use hyperbolic tangent activation functions, while the last layer is linear to avoid saturation.
-The final output is 3-dimensional for the purposes of visualization.
 
 
-\subsection{Learning a Mapping into Metric Space}
+\subsection{Learning a Mapping into Euclidean Space}
 
 % Loss architecture
-Following previous research in deep manifold learning \cite{hadsell2006drlim, humphrey2011nlse, humphrey2015dl4mir}, we use a contrastive loss function for optimizing the model's parameters.
+A contrastive loss function is used to optimize the model's parameters, following prior research on deep manifold learning \cite{hadsell2006drlim, humphrey2011nlse, humphrey2015dl4mir}.
 However, we augment training criterion to use a ternary network configuration, rather than the pairwise one employed previously, defined as follows:
 
 % loss_sim = hwr(cost_sim - margin_sim)^2
 % loss_diff = hwr(margin_diff - cost_diff)^2
 % total = ave(loss_sim + loss_diff)
 \begin{align*}
-Z_i = \mathcal{F}(X_i | \Theta), Z_p = \mathcal{F}(X_p | \Theta), Z_n = \mathcal{F}(X_n | \Theta)\\
-D_p = || Z_i - Z_p ||_2, D_n = || Z_i - Z_n ||_2\\
+Z_i = \mathcal{F}(X_i | \Theta),~Z_p = \mathcal{F}(X_p | \Theta),~Z_n = \mathcal{F}(X_n | \Theta)\\
+D_p = || Z_i - Z_p ||_2,~D_n = || Z_i - Z_n ||_2\\
 \mathcal{L} = \max(0, D_p^2 - m_{p}) + \max(0, m_{n} - D_n)^2 \\
 \end{align*}
 
-Here, three inputs -- $X_i, X_p, X_n$ -- are transformed by the model, $\mathcal{F}$, given the same parameters, $\Theta$.
+Here, an observation, $X_i$, a positive neighbor, $X_p$, and a negative example $X_n$, are transformed by the model, $\mathcal{F}$, given the same parameters, $\Theta$.
 These observations are chosen such that $X_i, X_p \in \Gamma_k$ and $X_n \in \bar{\Gamma_k}$.
 Euclidean distance is computed between the positive and negative embedding pairs, and two margins, $m_p$ and $m_n$, define a floor on the positive and negative loss terms.
 
 This loss is computed over a mini-batch of observations, differentiated with respect to the parameters of model, and back-propagated through the network via simple stochastic gradient descent.
-We use mini-batches of 32 triples, and training proceeds for 50k iterations.
+Mini-batches consist of 32 triples, and training proceeds for 50k iterations.
 
 \subsection{Data}
 
-The data source used herein is drawn from the Vienna Symphonic Library (VSL), a massive collection of studio-grade orchestral instrument samples recorded over a variety of performance techniques\footnote{\url{https://vsl.co.at/en}}.
-We leverage a previously compiled collection \cite{humphrey2015dl4mir}, comprised of 5k samples drawn from 24 of the largest instrument classes.
+% The data source used herein is drawn from the Vienna Symphonic Library (VSL), a massive collection of studio-grade orchestral instrument samples recorded over a variety of performance techniques\footnote{\url{https://vsl.co.at/en}}.
+We use a previously compiled collection of solo instrument samples, comprised of 5k instances drawn from 24 instrument classes \cite{humphrey2015dl4mir}.
 The set is partitioned into 72k, 18k, and 30k for training, validation, and testing, respectively.
-
 As discussed above, the crux of this exploration lies in \emph{how} neighborhoods are defined and sampled for training.
 We consider a number of types in the hopes that different behaviors might reveal themselves in the data:
 (1) nearest neighbors in the input space;
@@ -202,19 +199,15 @@ Sonification, concatenative synthesis.
 
 
 
-% \begin{figure}[ht]
+\begin{figure}[!t]
 % \vskip 0.2in
-% \begin{center}
-% \centerline{\includegraphics[width=\columnwidth]{icml_numpapers}}
-% \caption{Historical locations and number of accepted papers for International
-%   Machine Learning Conferences (ICML 1993 -- ICML 2008) and
-%   International Workshops on Machine Learning (ML 1988 -- ML
-%   1992). At the time this figure was produced, the number of
-%   accepted papers for ICML 2008 was unknown and instead estimated.}
-% \label{icml-historical}
-% \end{center}
+\begin{center}
+\centerline{\includegraphics[width=3.2in]{inst-pitch-d2_adsr.png}}
+\caption{Embedding space revealing an ADSR envelope.}
+\label{icml-historical}
+\end{center}
 % \vskip -0.2in
-% \end{figure}
+\end{figure}
 
 
 
