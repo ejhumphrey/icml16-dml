@@ -223,6 +223,45 @@ def slice_cqt(row, window_length):
             counter = 0
 
 
+def slice_cqt_weighted(row, window_length):
+    """Generate slices of CQT observations.
+
+    Parameters
+    ----------
+    row : pd.Series
+        Row from a features dataframe.
+
+    window_length : int
+        Length of the CQT slice in time.
+
+    Yields
+    ------
+    x_obs : np.ndarray
+        Slice of cqt data.
+
+    meta : dict
+        Metadata corresponding to the observation.
+    """
+    try:
+        data = np.load(row.features)['cqt']
+    except IOError as derp:
+        print("Failed reading row: {}\n\n{}".format(row.to_dict(), derp))
+        raise derp
+
+    # Create an index likelihood as a function of amplitude
+    weights = data.squeeze().sum(axis=-1)
+    weights /= weights.sum()
+    meta = dict(instrument=row.instrument, note_number=row.note_number,
+                fcode=row.fcode)
+
+    while True:
+        n = np.random.multinomial(1, weights).argmax()
+        obs = utils.padded_slice_ndarray(data, n, length=window_length, axis=1)
+        obs = obs[np.newaxis, ...]
+        meta['idx'] = n
+        yield obs, meta
+
+
 def neighbor_stream(neighbors, dataset, slice_func,
                     working_size=10, lam=25, with_meta=False,
                     **kwargs):
@@ -286,8 +325,77 @@ NEIGHBORS = {
 }
 
 
+def slice_embedding(row):
+    """Generate slices of CQT observations.
+
+    Parameters
+    ----------
+    row : pd.Series
+        Row from a features dataframe.
+
+    Yields
+    ------
+    z_obs : np.ndarray
+        Embedding coordinate.
+
+    meta : dict
+        Metadata corresponding to the observation.
+    """
+    try:
+        data = np.load(row.prediction)['z_out']
+    except IOError as derp:
+        print("Failed reading row: {}\n\n{}".format(row.to_dict(), derp))
+        raise derp
+
+    num_obs = data.shape[0]
+    # Break the remainder out into a subfunction for reuse with embedding
+    # sampling.
+    idx = np.random.permutation(num_obs) if num_obs > 0 else None
+    if idx is None:
+        raise ValueError(
+            "Misshapen CQT ({}) - {}".format(data.shape, row.to_dict()))
+    np.random.shuffle(idx)
+    counter = 0
+    meta = dict(instrument=row.instrument, note_number=row.note_number,
+                fcode=row.fcode)
+
+    while num_obs > 0:
+        n = idx[counter]
+        obs = data[n:n + 1]
+        meta['idx'] = n
+        yield obs, meta
+        counter += 1
+        if counter >= len(idx):
+            np.random.shuffle(idx)
+            counter = 0
+
+
+def class_stream(neighbors, dataset, working_size=20, lam=5, with_meta=False):
+    streams = dict()
+    for key, indexes in neighbors.items():
+        seed_pool = [pescador.Streamer(slice_embedding, dataset.loc[idx])
+                     for idx in indexes]
+        streams[key] = pescador.mux(seed_pool, n_samples=None,
+                                    k=working_size, lam=lam)
+    while True:
+        keys = list(streams.keys())
+        idx = random.choice(keys)
+        x_in, meta = next(streams[idx])
+
+        result = (dict(x_in=x_in, y=np.array([idx])),
+                  meta)
+        yield result if with_meta else result[0]
+
+
+SAMPLERS = {
+    'uniform': slice_cqt,
+    'weighted': slice_cqt_weighted
+}
+
+
 def create_stream(dataset, neighbor_mode, batch_size, window_length,
-                  working_size=25, lam=25, pitch_delta=0):
+                  sample_mode='uniform', working_size=25, lam=25,
+                  pitch_delta=0):
     """Create a data stream.
 
     Parameters
@@ -324,7 +432,8 @@ def create_stream(dataset, neighbor_mode, batch_size, window_length,
 
     neighbors = NEIGHBORS.get(neighbor_mode)(dataset, **nb_kwargs)
     stream = neighbor_stream(
-        neighbors, dataset, slice_func=slice_cqt, window_length=window_length,
+        neighbors, dataset, slice_func=SAMPLERS.get(sample_mode),
+        window_length=window_length,
         lam=lam, working_size=working_size)
 
     return pescador.buffer_batch(stream, buffer_size=batch_size)

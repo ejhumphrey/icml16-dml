@@ -8,21 +8,22 @@ build:
   test_file: "/media/ejhumphrey/workspace/icml-dml/datasets/test.json"
 
 train:
-  trial_name: "deleteme-pitch-test"
+  trial_name: "instrument-001"
   output_dir: "/media/ejhumphrey/workspace/icml-dml/models"
   data_params:
     dataset: "/media/ejhumphrey/workspace/icml-dml/datasets/train.json"
-    neighbor_mode: "instrument-pitch"
+    neighbor_mode: "instrument"
     batch_size: 32
-    working_size: 25
-    lam: 20
+    working_size: 6
+    lam: 10
     pitch_delta: 0
+    sample_mode: 'weighted'
 
   model_params:
     name: "nlse"
     n_in: 10
     n_out: 3
-    size: "large"
+    size: "xlarge"
     verbose: yes
 
   hyperparams:
@@ -32,7 +33,7 @@ train:
     origin_penalty: 0.002
 
   train_params:
-    max_iter: 5000
+    max_iter: 50000
     save_freq: 500
     print_freq: 100
     nan_exceptions: 10
