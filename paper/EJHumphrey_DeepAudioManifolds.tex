@@ -80,6 +80,7 @@
 Use data to learn low-dimensional representations of acoustic similarity for visualization and browsing, discover latent manifolds in the data.
 We present an approach leveraging different neighborhood relationships drawn between a large collection of instrument samples.
 Describe insights and produce a number of examples that illustrate the behaviors induced by this approach.
+Describe insights and produce a number of examples that illustrate the behaviors induced by this approach.
 
 
 \end{abstract}
@@ -151,11 +152,13 @@ However, we augment training criterion to use a ternary network configuration, r
 % loss_sim = hwr(cost_sim - margin_sim)^2
 % loss_diff = hwr(margin_diff - cost_diff)^2
 % total = ave(loss_sim + loss_diff)
+% \vspace{-0.15in}
 \begin{align*}
 Z_i = \mathcal{F}(X_i | \Theta),~Z_p = \mathcal{F}(X_p | \Theta),~Z_n = \mathcal{F}(X_n | \Theta)\\
 D_p = || Z_i - Z_p ||_2,~D_n = || Z_i - Z_n ||_2\\
 \mathcal{L} = \max(0, D_p^2 - m_{p}) + \max(0, m_{n} - D_n)^2 \\
 \end{align*}
+% \vspace{-0.15in}
 
 Here, an observation, $X_i$, a positive neighbor, $X_p$, and a negative example $X_n$, are transformed by the model, $\mathcal{F}$, given the same parameters, $\Theta$.
 These observations are chosen such that $X_i, X_p \in \Gamma_k$ and $X_n \in \bar{\Gamma_k}$.
@@ -169,42 +172,32 @@ Mini-batches consist of 32 triples, and training proceeds for 50k iterations.
 % The data source used herein is drawn from the Vienna Symphonic Library (VSL), a massive collection of studio-grade orchestral instrument samples recorded over a variety of performance techniques\footnote{\url{https://vsl.co.at/en}}.
 We use a previously compiled collection of solo instrument samples, comprised of 5k instances drawn from 24 instrument classes \cite{humphrey2015dl4mir}.
 The set is partitioned into 72k, 18k, and 30k for training, validation, and testing, respectively.
-As discussed above, the crux of this exploration lies in \emph{how} neighborhoods are defined and sampled for training.
-We consider a number of types in the hopes that different behaviors might reveal themselves in the data:
-(1) nearest neighbors in the input space;
-(2) instrument class;
-(3) absolute pitch;
-% \item Pitch chroma
-(4) instrument class and absolute pitch;
-(5) instrument class and absolute pitch, $\pm~2$.
+The crux of this exploration lies in \emph{how} neighborhoods are defined and sampled for training, and thus various relationships are considered to encourage different kinds of embeddings, including instrument class, absolute pitch, instrument class and absolute pitch, and instrument class and absolute pitch $\pm~2$ semitones.
 % \item Instrument class and pitch chroma
 
 
 \section{Evaluation}
 
-Given various learned mappings, there are a number of ways in which we can assess the ``quality'' of the resulting representation.
+After fitting models to the different neighborhood relationships, we consider a few approaches to assessing the organization of the resulting embeddings.
 % Neighbors
-Having trained the mappings on neighborhood relationships, we use $k$-nearest neighbor classification as a quantitative approach to measure the extent to which this is preserved.
-Consistent with previous results \cite{humphrey2011nlse, humphrey2015dl4mir}, the sharpness of class boundaries is inversely to the discrete number of neighborhoods, and is likely due in part to the limits of three-space.
-Regardless, the learned representations consistently demonstrate solid performance in ranked retrieval settings.
+Quantitatively, $k$-nearest neighbor classification measures the extent to which neighborhoods are preserved, and brute-force distance is used to sort data in a ranked retrieval setting.
+Overall we find the learned embeddings are well-organized and consistently demonstrate robust performance in query-by-example tasks.
+% Consistent with previous results \cite{humphrey2011nlse, humphrey2015dl4mir}, the sharpness of class boundaries is inversely to the discrete number of neighborhoods, and is likely due in part to the limits of three-space.
 % Analogy
-We can additionally test the space for acoustic ``analogy'', where the resultant vector between two points is added to a third.
-Though inherently subjective, this approach is enticing as a new mode of acoustic search.
-
-%Visualization
-Can we visually interpretable embeddings?
-Follow trajectories of sounds in 3-space.
-ADSR
-Sonification, concatenative synthesis.
+Additionally, these representations lend themselves well to more qualitative inquiries.
+Visualization is the most straightforward way of exploring the learned embeddings, revealing some surprising behavior, as in Figure \ref{fig:asdr}.
+Acoustic ``analogy'' serves as another good, if subjective, test of semantic organization, where the resultant vector between two points is applied to a third.
+Lastly, trajectories in space are sonified via concatenative synthesis, providing audible insight into the learned embeddings.
 
 
 
 \begin{figure}[!t]
-% \vskip 0.2in
+\vskip -0.2in
 \begin{center}
-\centerline{\includegraphics[width=3.2in]{inst-pitch-d2_adsr.png}}
+\centerline{\includegraphics[width=3.2in]{inst-pitch-d2_adsr.pdf}}
+\vskip -0.2in
 \caption{Embedding space revealing an ADSR envelope.}
-\label{icml-historical}
+\label{fig:asdr}
 \end{center}
 % \vskip -0.2in
 \end{figure}
@@ -214,8 +207,10 @@ Sonification, concatenative synthesis.
 \section{Summary}
 
 We have explored a range of embeddings learned using a convolutional neural network optimized to preserve various neighborhood relationships between instrument sounds in 3 dimensions.
-Interesting to
-
+We have explored a range of embeddings learned using a convolutional neural network optimized to preserve various neighborhood relationships between instrument sounds in 3 dimensions.
+We have explored a range of embeddings learned using a convolutional neural network optimized to preserve various neighborhood relationships between instrument sounds in 3 dimensions.
+% We have explored a range of embeddings learned using a convolutional neural network optimized to preserve various neighborhood relationships between instrument sounds in 3 dimensions.
+% We have explored a range of embeddings learned using a convolutional neural network optimized to preserve various neighborhood relationships between instrument sounds in 3 dimensions.
 
 % Acknowledgements should only appear in the accepted version.
 % \section*{Acknowledgements}
