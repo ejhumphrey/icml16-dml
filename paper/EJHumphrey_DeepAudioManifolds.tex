@@ -1,0 +1,262 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%% ICML 2016 EXAMPLE LATEX SUBMISSION FILE %%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Use the following line _only_ if you're still using LaTeX 2.09.
+%\documentstyle[icml2016,epsf,natbib]{article}
+% If you rely on Latex2e packages, like most moden people use this:
+\documentclass{article}
+
+% use Times
+\usepackage{times}
+% For figures
+\usepackage{graphicx} % more modern
+%\usepackage{epsfig} % less modern
+\usepackage{subfigure}
+
+% For citations
+\usepackage{natbib}
+
+% For algorithms
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
+% Maths
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+% As of 2011, we use the hyperref package to produce hyperlinks in the
+% resulting PDF.  If this breaks your system, please commend out the
+% following usepackage line and replace \usepackage{icml2016} with
+% \usepackage[nohyperref]{icml2016} above.
+\usepackage{hyperref}
+
+% Packages hyperref and algorithmic misbehave sometimes.  We can fix
+% this with the following command.
+\newcommand{\theHalgorithm}{\arabic{algorithm}}
+
+% Employ the following version of the ``usepackage'' statement for
+% submitting the draft version of the paper for review.  This will set
+% the note in the first column to ``Under review.  Do not distribute.''
+\usepackage{icml2016}
+
+% Employ this version of the ``usepackage'' statement after the paper has
+% been accepted, when creating the final version.  This will set the
+% note in the first column to ``Proceedings of the...''
+%\usepackage[accepted]{icml2016}
+
+
+% The \icmltitle you define below is probably too long as a header.
+% Therefore, a short form for the running title is supplied here:
+\icmltitlerunning{Deep Manifold Learning on Music Audio for Navigating Large Sound Libraries}
+
+\begin{document}
+
+\twocolumn[
+\icmltitle{Deep Manifold Learning on Music Audio \\
+           for Navigating Large Sound Libraries}
+
+% It is OKAY to include author information, even for blind
+% submissions: the style file will automatically remove it for you
+% unless you've provided the [accepted] option to the icml2016
+% package.
+\icmlauthor{Eric J. Humphrey}{ejhumphrey@spotify.com}
+\icmladdress{Spotify USA,
+            620 Avenue of the Americas, New York City, NY 10011 USA}
+% \icmlauthor{Your CoAuthor's Name}{email@coauthordomain.edu}
+% \icmladdress{Their Fantastic Institute,
+%             27182 Exp St., Toronto, ON M6H 2T1 CANADA}
+
+% You may provide any keywords that you
+% find helpful for describing your paper; these are used to populate
+% the "keywords" metadata in the PDF but will not be shown in the document
+\icmlkeywords{boring formatting information, machine learning, ICML}
+
+\vskip 0.3in
+]
+
+\begin{abstract}
+
+Finding sound for creative purposes is hard because it can be difficult to frame good queries.
+
+Use data to learn low-dimensional representations for visualization and browsing, discover latent manifolds in the data.
+
+
+\end{abstract}
+
+\section{Introduction}
+\label{submission}
+
+% A query for ``voice'' returns over 19k results on FreeSound, a collaborative database of audio clips.
+
+Navigating large audio sample libraries has long been a pain point for musicians and sound artists alike.
+Search
+% and retrieval is an especially acute problem for sound, as
+queries are predominantly forced to take the form of text, which is problematic for at least two reasons.
+Metaphors and descriptive tags, when provided, struggle to capture important characteristics in sufficient detail, and this language often varies from one individual to the next.
+Alternatively, standard approaches to sound visualization -- waveform envelopes or spectrograms -- are hardly intuitive for the general population.
+% Furthermore, such descriptions are not always associated with every sound in a collection, and typically only at the granularity of the entire recording.
+% As a result, the task of navigating a sound library is often reduced to that of an exhaustive, brute force search.
+As a result, the development of computational systems for acoustic similarity, an elusive concept in its own right, remains an open research topic.
+
+% The link between ^ and v isn't stellar.
+Acoustic similarity is a natural application of manifold learning, which attempts to preserve relationships in some lower dimensional, metric space, typically for visualization.
+Common embedding methods, such as Multidimensional Scaling (MDS) \cite{}, Locally Linear Embedding (LLE) \cite{}, or Isomap \cite{}, respect pairwise distances between observations, but exhibit two drawbacks in practice.
+First, these methods do not yield generalizable mappings that can be readily applied to previously unseen inputs.
+Second, and perhaps more importantly, obtaining accurate pairwise distances for a large collection of inputs is not scalable to large datasets.
+Rank-order methods, like WSABIE \cite{weston2011wsabie}, relax this constraint in favor of maintaining relevance ordering within a collection.
+This is a slightly easier formulation, but it may still be necessary to establish a prohibitive number of pairwise comparisons.
+Finally, neighborhood methods, such as neighborhood components analysis (NCA) \cite{hinton2004neighborhood} (probabilistic neighbors), DrLIM \cite{hadsell2006drlim}, or \texttt{word2vec} (contextual ``neighbors'') \cite{mikolov2013distributed}, simplifiy this further exploiting unordered set relationships.
+Neighborhoods need not be exhaustive and thus may be easier to obtain, especially from large datasets, or be defined by coarse \emph{a priori} knowledge, \emph{e.g.} descriptive tags.
+Notably, prior work has demonstrated the potential for such methods to yield intutitive representations, where algebraic operations on vectors encode physical orientation \cite{hadsell2006drlim} or analogy \cite{mikolov2013efficient}.
+
+Synthesizing these two topics, we explore the potential of neighborhood-based ``deep'' manifold learning with a large collection of instrument sounds for developing intuitive acoustic representations.
+Different kinds of neighborhoods are easy to draw from data, and we are curious to examine the different mappings they produce.
+Deep networks provide a general framework in which relevant features and a smoothly interpolated space can be learned.
+Feature learning is particularly important for acoustic similarity, as the perceptual quality of ``timbre'' remains an ill-defined concept.
+Finally, we evaluate the intuitive nature of the learned representations through both quantitative and qualitative means to identify any projections might prove useful in making sense of large sound collections.
+% , this work explores the effects of leveraging different neighborhood relationships
+% Therefore we are interested primarily in how these partitions are defined and sampled during training.
+
+
+
+\section{Method}
+
+We approach acoustic similarity by attempting to maintain contrasting set relationships, \emph{i.e.} neighborhoods, between samples in a low-dimensional metric space.
+Given a collection of observations, $\mathcal{D}$, a contrastive parition, $k$, consists of a positive, $\Gamma_k$, and a negative, $\bar{\Gamma_k}$, subset, satisfying three conditions:
+one, contrastive partitions are internally disjoint, $\Gamma_k \cap \bar{\Gamma_k} = \varnothing$;
+two, contrastive partitions may comprise a subset of the entire collection, $|\Gamma_k \cup \bar{\Gamma_k}| \le |\mathcal{D}|$;
+and three, contrastive partitions are drawn independently of each other, such that any two partitions, $i$ and $j$, may share observations, $|\Gamma_i \cap \Gamma_j| \ge 0$.
+This is achived by leveraging a parameterized, non-linear function, \emph{e.g.} a convolutional neural network, that maps high dimensional data, \emph{i.e.} audio, into the target embedding space.
+The parameters are optimized to make the distance of neighbors small and non-neighbors large, and the resulting model can then be evaluated on a hold-out set.
+
+
+\subsection{Model}
+
+Audio is first transformed to a constant-Q representation, parameterized as follows:
+signals are downsampled to 16kHz;
+bins are spaced at 24 per octave, or quarter-tone resolution, and span eight octaves, from 27.5Hz to 7040Hz;
+analysis is performed at a framerate of 20Hz uniformly across all frequency bins.
+Logarithmic compression is applied to the frequency coefficients with an offset of one, i.e. $log(C*X + 1.0)$, where we set $C=50$.
+
+Following the work presented in \cite{humphrey2015dl4mir}, 500ms windows of time-frequency coefficients are transformed by a five-layer convolutional neural network, consisting of three 3D-convolutional layers and two fully connected layers.
+Max-pooling by a factor of 2 is used along time in first two layers.
+The first four layers use hyperbolic tangent activation functions, while the last layer is linear to avoid saturation.
+The final output is 3-dimensional for the purposes of visualization.
+
+
+\subsection{Learning a Mapping into Metric Space}
+
+% Loss architecture
+Following previous research in deep manifold learning \cite{hadsell2006drlim, humphrey2011nlse, humphrey2015dl4mir}, we use a contrastive loss function for optimizing the model's parameters.
+However, we augment training criterion to use a ternary network configuration, rather than the pairwise one employed previously, defined as follows:
+
+% loss_sim = hwr(cost_sim - margin_sim)^2
+% loss_diff = hwr(margin_diff - cost_diff)^2
+% total = ave(loss_sim + loss_diff)
+\begin{align*}
+Z_i = \mathcal{F}(X_i | \Theta), Z_p = \mathcal{F}(X_p | \Theta), Z_n = \mathcal{F}(X_n | \Theta)\\
+D_p = || Z_i - Z_p ||_2, D_n = || Z_i - Z_n ||_2\\
+\mathcal{L} = \max(0, D_p^2 - m_{p}) + \max(0, m_{n} - D_n)^2 \\
+\end{align*}
+
+Here, three inputs -- $X_i, X_p, X_n$ -- are transformed by the model, $\mathcal{F}$, given the same parameters, $\Theta$.
+These observations are chosen such that $X_i, X_p \in \Gamma_k$ and $X_n \in \bar{\Gamma_k}$.
+Euclidean distance is computed between the positive and negative embedding pairs, and two margins, $m_p$ and $m_n$, define a floor on the positive and negative loss terms.
+
+This loss is computed over a mini-batch of observations, differentiated with respect to the parameters of model, and back-propagated through the network via simple stochastic gradient descent.
+We use mini-batches of 32 triples, and training proceeds for 50k iterations.
+
+\subsection{Data}
+
+The data source used herein is drawn from the Vienna Symphonic Library (VSL), a massive collection of studio-grade orchestral instrument samples recorded over a variety of performance techniques\footnote{\url{https://vsl.co.at/en}}.
+We leverage a previously compiled collection \cite{humphrey2015dl4mir}, comprised of 5k samples drawn from 24 of the largest instrument classes.
+The set is partitioned into 72k, 18k, and 30k for training, validation, and testing, respectively.
+
+As discussed above, the crux of this exploration lies in \emph{how} neighborhoods are defined and sampled for training.
+We consider a number of types in the hopes that different behaviors might reveal themselves in the data:
+(1) nearest neighbors in the input space;
+(2) instrument class;
+(3) absolute pitch;
+% \item Pitch chroma
+(4) instrument class and absolute pitch;
+(5) instrument class and absolute pitch, $\pm~2$.
+% \item Instrument class and pitch chroma
+
+
+\section{Evaluation}
+
+Given various learned mappings, there are a number of ways in which we can assess the ``quality'' of the resulting representation.
+% Neighbors
+Having trained the mappings on neighborhood relationships, we use $k$-nearest neighbor classification as a quantitative approach to measure the extent to which this is preserved.
+Consistent with previous results \cite{humphrey2011nlse, humphrey2015dl4mir}, the sharpness of class boundaries is inversely to the discrete number of neighborhoods, and is likely due in part to the limits of three-space.
+Regardless, the learned representations consistently demonstrate solid performance in ranked retrieval settings.
+% Analogy
+We can additionally test the space for acoustic ``analogy'', where the resultant vector between two points is added to a third.
+Though inherently subjective, this approach is enticing as a new mode of acoustic search.
+
+%Visualization
+Can we visually interpretable embeddings?
+Follow trajectories of sounds in 3-space.
+ADSR
+Sonification, concatenative synthesis.
+
+
+
+% \begin{figure}[ht]
+% \vskip 0.2in
+% \begin{center}
+% \centerline{\includegraphics[width=\columnwidth]{icml_numpapers}}
+% \caption{Historical locations and number of accepted papers for International
+%   Machine Learning Conferences (ICML 1993 -- ICML 2008) and
+%   International Workshops on Machine Learning (ML 1988 -- ML
+%   1992). At the time this figure was produced, the number of
+%   accepted papers for ICML 2008 was unknown and instead estimated.}
+% \label{icml-historical}
+% \end{center}
+% \vskip -0.2in
+% \end{figure}
+
+
+
+\section{Summary}
+
+We have explored a range of embeddings learned using a convolutional neural network optimized to preserve various neighborhood relationships between instrument sounds in 3 dimensions.
+Interesting to
+
+
+% Acknowledgements should only appear in the accepted version.
+% \section*{Acknowledgements}
+
+% \textbf{Do not} include acknowledgements in the initial version of
+% the paper submitted for blind review.
+
+% If a paper is accepted, the final camera-ready version can (and
+% probably should) include acknowledgements. In this case, please
+% place such acknowledgements in an unnumbered section at the
+% end of the paper. Typically, this will include thanks to reviewers
+% who gave useful comments, to colleagues who contributed to the ideas,
+% and to funding agencies and corporate sponsors that provided financial
+% support.
+
+
+% In the unusual situation where you want a paper to appear in the
+% references without citing it in the main text, use \nocite
+% \nocite{langley00}
+
+\bibliography{example_paper}
+\bibliographystyle{icml2016}
+
+\end{document}
+
+
+% This document was modified from the file originally made available by
+% Pat Langley and Andrea Danyluk for ICML-2K. This version was
+% created by Lise Getoor and Tobias Scheffer, it was slightly modified
+% from the 2010 version by Thorsten Joachims & Johannes Fuernkranz,
+% slightly modified from the 2009 version by Kiri Wagstaff and
+% Sam Roweis's 2008 version, which is slightly modified from
+% Prasad Tadepalli's 2007 version which is a lightly
+% changed version of the previous year's version by Andrew Moore,
+% which was in turn edited from those of Kristian Kersting and
+% Codrina Lauth. Alex Smola contributed to the algorithmic style files.
