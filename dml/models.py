@@ -299,13 +299,15 @@ def transform_dataset(dataset, graph, output_dir, verbose=True, axis=1):
     predictions = []
     for n, (idx, row) in enumerate(dataset.iterrows()):
         data = np.load(row.features)['cqt']
+        # TODO: Remove this when fixed upstream.
+        data += np.random.normal(loc=0.1, scale=0.01, size=data.shape)
         outputs = convolve(data, graph, axis=axis)
-        output_file = os.path.join(output_dir, "{}.npz".format(row.key))
+        output_file = os.path.join(output_dir, "{}.npz".format(idx))
         np.savez(output_file, **outputs)
         predictions += [output_file]
         if verbose:
             print("[{0}] {1:7} / {2:7}: {3}".format(
-                  time.asctime(), n, total_count, row.key))
+                  time.asctime(), n, total_count, idx))
 
     dataset['prediction'] = predictions
     return dataset

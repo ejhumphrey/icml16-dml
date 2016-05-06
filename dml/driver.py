@@ -83,9 +83,10 @@ def main(config, filename=''):
 
     config.update(model_outputs=fit(**copy.deepcopy(config)))
 
-    # Snapshot this artifact.
+    # Snapshot the config so we know what generated the model.
     if filename:
-        output_config = os.path.join(output_dir, filename)
+        output_config = os.path.join(output_dir, config['trial_name'],
+                                     filename)
         try:
             with open(output_config, 'w') as fp:
                 yaml.dump(config, fp)
