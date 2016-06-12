@@ -1,4 +1,5 @@
 import argparse
+import numpy as np
 import optimus
 import os
 import pandas as pd
@@ -44,8 +45,10 @@ def validate(config):
 
 def predict(config):
     kwargs = config['predict']
-    graph = optimus.load(kwargs['model_file'], kwargs['param_file'])
-    dataset = pd.read_json(kwargs['index_file'])
+    graph = optimus.load(kwargs['model_file'])
+    # TODO: Optimus bug, fix this.
+    graph.param_values = dict(**np.load(kwargs['param_file']))
+    dataset = pd.read_json(kwargs['dataset'])
     new_dataset = dml.models.transform_dataset(
         dataset, graph, kwargs['output_dir'])
     output_file = os.path.join(kwargs['output_dir'], "output_index.json")

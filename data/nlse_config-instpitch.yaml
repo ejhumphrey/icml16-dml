@@ -1,0 +1,45 @@
+
+build:
+  data_root: "/media/ejhumphrey/workspace/icml-dml/features/cqts"
+  train_test_ratio: 0.75
+  train_valid_ratio: 0.8
+  train_file: "/media/ejhumphrey/workspace/icml-dml/datasets/train.json"
+  valid_file: "/media/ejhumphrey/workspace/icml-dml/datasets/valid.json"
+  test_file: "/media/ejhumphrey/workspace/icml-dml/datasets/test.json"
+
+train:
+  trial_name: "instpitch-000"
+  output_dir: "/media/ejhumphrey/workspace/icml-dml/models-v1"
+  data_params:
+    dataset: "/media/ejhumphrey/workspace/icml-dml/datasets/train.json"
+    neighbor_mode: "instrument-pitch"
+    batch_size: 32
+    working_size: 6
+    lam: 10
+    pitch_delta: 0
+    sample_mode: 'weighted'
+
+  model_params:
+    name: "nlse"
+    n_in: 10
+    n_out: 3
+    size: "xlarge"
+    verbose: yes
+
+  hyperparams:
+    learning_rate: 0.02
+    margin_same: 0.0
+    margin_diff: 1.0
+    origin_penalty: 0.002
+
+  train_params:
+    max_iter: 50000
+    save_freq: 500
+    print_freq: 100
+    nan_exceptions: 10
+
+predict:
+  model_file: "/media/ejhumphrey/workspace/icml-dml/models-v1/instpitch-000/instpitch-000-predictor.json"
+  param_file: "/media/ejhumphrey/workspace/icml-dml/models-v1/instpitch-000/instpitch-000-050000-20160611_23h46m35s.npz"
+  dataset: "/media/ejhumphrey/workspace/icml-dml/datasets/fullset.json"
+  output_dir: "/media/ejhumphrey/workspace/icml-dml/embeddings/instpitch-000-050000-20160611_23h46m35s"
