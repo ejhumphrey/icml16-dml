@@ -43,3 +43,22 @@ predict:
   param_file: "/media/ejhumphrey/workspace/icml-dml/models-v1/instrument-000/instrument-000-050000-20160611_18h21m39s.npz"
   dataset: "/media/ejhumphrey/workspace/icml-dml/datasets/fullset.json"
   output_dir: "/media/ejhumphrey/workspace/icml-dml/embeddings/instrument-000-050000-20160611_18h21m39s"
+
+score:
+  neighbor_mode: 'instrument'
+  dataset_path: "/media/ejhumphrey/workspace/icml-dml/datasets/"
+  embeddings: "/media/ejhumphrey/workspace/icml-dml/embeddings/instrument-000-050000-20160611_18h21m39s/output_index.json"
+  num_neighbors:
+    - 1
+    - 5
+    - 9
+    - 15
+    - 21
+    - 35
+    - 51
+    - 75
+    - 101
+  num_train: 50000
+  num_valid: 5000
+  num_test: 50000
+  result_dir: "/media/ejhumphrey/workspace/icml-dml/results/instrument-000-050000-20160611_18h21m39s"
