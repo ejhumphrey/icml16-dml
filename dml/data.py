@@ -485,4 +485,4 @@ def sample_embeddings(dataset, num_points):
         data[n, ...] = coords
         labels.append(meta)
 
-    return data, pd.DataFrame.from_records(labels)
+    return data, pd.DataFrame.from_records(labels, index=range(num_points))
