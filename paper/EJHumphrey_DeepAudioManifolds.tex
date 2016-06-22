@@ -156,7 +156,7 @@ However, we augment training criterion to use a ternary network configuration, r
 \begin{align*}
 Z_i = \mathcal{F}(X_i | \Theta),~Z_p = \mathcal{F}(X_p | \Theta),~Z_n = \mathcal{F}(X_n | \Theta)\\
 D_p = || Z_i - Z_p ||_2,~D_n = || Z_i - Z_n ||_2\\
-\mathcal{L} = \max(0, D_p^2 - m_{p}) + \max(0, m_{n} - D_n)^2 \\
+\mathcal{L} = \max(0, D_p - m_{p})^2 + \max(0, m_{n} - D_n)^2 \\
 \end{align*}
 % \vspace{-0.15in}
 
