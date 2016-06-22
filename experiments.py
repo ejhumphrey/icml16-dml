@@ -1,4 +1,6 @@
 import argparse
+import json
+import numpy as np
 import optimus
 import os
 import pandas as pd
@@ -6,6 +8,7 @@ import yaml
 
 import dml.data
 import dml.driver
+import dml.evaluate
 import dml.models
 import dml.utils
 
@@ -44,8 +47,10 @@ def validate(config):
 
 def predict(config):
     kwargs = config['predict']
-    graph = optimus.load(kwargs['model_file'], kwargs['param_file'])
-    dataset = pd.read_json(kwargs['index_file'])
+    graph = optimus.load(kwargs['model_file'])
+    # TODO: Optimus bug, fix this.
+    graph.param_values = dict(**np.load(kwargs['param_file']))
+    dataset = pd.read_json(kwargs['dataset'])
     new_dataset = dml.models.transform_dataset(
         dataset, graph, kwargs['output_dir'])
     output_file = os.path.join(kwargs['output_dir'], "output_index.json")
@@ -54,7 +59,21 @@ def predict(config):
 
 
 def score(config):
-    pass
+    kwargs = config['score']
+    dset_path = kwargs.pop('dataset_path')
+    train = pd.read_json(os.path.join(dset_path, 'train.json'))
+    valid = pd.read_json(os.path.join(dset_path, 'valid.json'))
+    test = pd.read_json(os.path.join(dset_path, 'test.json'))
+    embeddings = pd.read_json(kwargs.pop('embeddings'))
+    train = embeddings.loc[train.index]
+    valid = embeddings.loc[valid.index]
+    test = embeddings.loc[test.index]
+
+    result_file = os.path.join(kwargs.pop("result_dir"), "stats.json")
+    dml.utils.safe_makedirname(result_file)
+    results = dml.evaluate.knn_classify(train, valid, test, **kwargs)
+    with open(result_file, 'w') as fp:
+        json.dump(results, fp, indent=2)
 
 
 def main(config):

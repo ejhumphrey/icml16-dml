@@ -38,12 +38,12 @@
 % Employ the following version of the ``usepackage'' statement for
 % submitting the draft version of the paper for review.  This will set
 % the note in the first column to ``Under review.  Do not distribute.''
-\usepackage{icml2016}
+% \usepackage{icml2016}
 
 % Employ this version of the ``usepackage'' statement after the paper has
 % been accepted, when creating the final version.  This will set the
 % note in the first column to ``Proceedings of the...''
-%\usepackage[accepted]{icml2016}
+\usepackage[accepted]{icml2016}
 
 
 % The \icmltitle you define below is probably too long as a header.
@@ -77,10 +77,9 @@
 
 \begin{abstract}
 
-Use data to learn low-dimensional representations of acoustic similarity for visualization and browsing, discover latent manifolds in the data.
-We present an approach leveraging different neighborhood relationships drawn between a large collection of instrument samples.
-Describe insights and produce a number of examples that illustrate the behaviors induced by this approach.
-Describe insights and produce a number of examples that illustrate the behaviors induced by this approach.
+In this talk, we explore the application of manifold learning with solo instrument samples to yield low-dimensional representations of sound for visualization and browsing.
+Our approach uses deep neural networks to jointly learn features and the embedding space, trained to optimally preserve neighborhood relationships.
+We then turn our attention to evaluating the usefulness of the resulting embeddings, both through benchmarking in retrieval tasks and presenting notable multimedia examples.
 
 
 \end{abstract}
@@ -90,7 +89,7 @@ Describe insights and produce a number of examples that illustrate the behaviors
 
 % A query for ``voice'' returns over 19k results on FreeSound, a collaborative database of audio clips.
 
-Navigating large audio sample libraries has long been a pain point for musicians and sound artists alike.
+Navigating large sound libraries has long been a pain point for musicians, artists, and producers.
 Search queries are predominantly forced to take the form of text, which is problematic for at least two reasons.
 Metaphors and descriptive tags, when provided, struggle to capture important characteristics in sufficient detail, and this language often varies from one individual to the next.
 Alternatively, standard approaches to sound visualization -- waveform envelopes or spectrograms -- are hardly intuitive for the general population.
@@ -99,20 +98,20 @@ Alternatively, standard approaches to sound visualization -- waveform envelopes 
 As a result, the development of computational systems for acoustic similarity, an elusive concept in its own right, remains an open research topic.
 
 % The link between ^ and v isn't stellar.
-Acoustic similarity is a natural use case for manifold learning, which attempts to preserve relationships in some low dimensional space, typically for visualization.
-Common embedding methods, such as Multidimensional Scaling (MDS) \cite{x2000y}, Locally Linear Embedding (LLE) \cite{x2000y}, or Isomap \cite{x2000y}, respect pairwise distances between observations, but exhibit two practical drawbacks:
+Acoustic similarity is a natural use case for manifold learning, which attempts to preserve relationships in a low dimensional space, often for visualization.
+Common embedding methods, such as Multidimensional Scaling (MDS) \cite{borg2005mds}, Locally Linear Embedding (LLE) \cite{roweis2000nonlinear}, or Isomap \cite{tenenbaum2000global}, respect pairwise distances between observations, but exhibit two practical drawbacks:
 these methods do not yield general functions that can be applied to new data, and obtaining accurate pairwise distances for large datasets is not scalable.
 Ranking methods, like WSABIE \cite{weston2011wsabie}, relax this constraint in favor of maintaining relative order between observations, but these nuanced relationships can still be hard to obtain at scale.
-Neighborhood methods, such as neighborhood components analysis (NCA) \cite{hinton2004neighborhood}, DrLIM \cite{hadsell2006drlim}, or \texttt{word2vec} \cite{mikolov2013distributed}, simplifiy the problem even further by exploiting unordered set relationships. %\footnote{Both NCA and word2vec can be understood as neighborhood methods, with probabilistic and context-driven interpretations.}
+Neighborhood methods, such as neighborhood components analysis (NCA) \cite{goldberger2004neighbourhood, salakhutdinov2007learning}, DrLIM \cite{hadsell2006dimensionality}, or \texttt{word2vec} \cite{mikolov2013distributed}, simplifiy the problem even further by exploiting unordered set relationships. %\footnote{Both NCA and word2vec can be understood as neighborhood methods, with probabilistic and context-driven interpretations.}
 Rather than placing the burden of continuity on the data, neighborhood methods task the model with smoothly interpolating discrete sets in the embedding space.
  % easier to obtain, especially from large datasets, or be defined by coarse \emph{a priori} knowledge, \emph{e.g.} descriptive tags.
-Prior work has demonstrated the potential for such methods to yield intutitive representations, where algebraic operations on vectors encode physical orientation \cite{hadsell2006drlim} or analogy \cite{mikolov2013efficient}.
+Prior work has demonstrated the potential for such methods to yield intutitive representations, where algebraic operations on vectors encode physical orientation \cite{hadsell2006dimensionality} or analogy \cite{mikolov2013efficient}.
 
-Synthesizing these two topics, we explore the potential of neighborhood-based ``deep'' manifold learning with a large collection of instrument sounds for developing intuitive acoustic representations.
+Synthesizing these two topics, neighborhood-based ``deep'' manifold learning methods have shown promise in producing intuitive acoustic representations from sound samples \cite{humphrey2011nlse}, and we look to extend that work here.
 % Different kinds of neighborhoods are easy to draw from data, and we are curious to examine the different mappings they produce.
-Deep neural networks provide a general framework for learning functions that map high-dimensional data into useful embeddings, which we influence by considering different kinds of relationships between inputs.
+Deep neural networks provide a general approach to mapping high-dimensional data into useful embeddings, which we influence by considering different kinds of relationships between inputs.
 % Feature learning is particularly important for acoustic similarity, as the perceptual quality of ``timbre'' remains an ill-defined concept.
-The behavior of the resulting embeddings is evaluated through both quantitative and qualitative means, yielding a variety of insights and interesting examples.
+The semantic organization of the learned embeddings is evaluated through various means, and serves as vehicle for exploration in itself.
 
  % to identify any projections might prove useful in making sense of large sound collections.
 % , this work explores the effects of leveraging different neighborhood relationships
@@ -132,22 +131,23 @@ Thus, the network can be understood as interpolating the various discrete partit
 
 \subsection{Model}
 
+The model used here follows prior work \cite{humphrey2015dl4mir}.
 Audio is first transformed to a constant-Q representation, parameterized as follows:
 signals are downsampled to 16kHz;
 bins are spaced at 24 per octave, or quarter-tone resolution, and span eight octaves, from 27.5Hz to 7040Hz;
-analysis is performed at a framerate of 20Hz uniformly across all frequency bins.
-Logarithmic compression is applied to the frequency coefficients with an offset of one, i.e. $log(C*X + 1.0)$, where $C=50$.
-
-Keeping with related work \cite{humphrey2015dl4mir}, windows of time-frequency coefficients are transformed by a five-layer convolutional neural network (CNN) into a 3-dimensional embedding for the purposes of visualization.
-The network consists of three 3D-convolutional layers and two fully connected layers, with max-pooling by a factor of 2 in time for first two layers.
+analysis is performed at a framerate of 20Hz.
+Logarithmic compression is applied to the frequency coefficients, i.e. $log(C*X + 1.0)$, with $C=50$.
+Multi-frame windows are transformed by a five-layer convolutional neural network (CNN) into a 3-dimensional vector.
+The network consists of three 3D-convolutional layers and two fully connected layers, with max-pooling by 2 in time for first two layers.
 The first four layers use hyperbolic tangent activation functions, while the last layer is linear to avoid saturation.
 
 
 \subsection{Learning a Mapping into Euclidean Space}
 
 % Loss architecture
-A contrastive loss function is used to optimize the model's parameters, following prior research on deep manifold learning \cite{hadsell2006drlim, humphrey2011nlse, humphrey2015dl4mir}.
-However, we augment training criterion to use a ternary network configuration, rather than the pairwise one employed previously, defined as follows:
+A contrastive loss function is used to optimize the model's parameters,
+% in line with related work \cite{humphrey2011nlse, humphrey2015dl4mir}.
+with copies of the model arranged in a ternary configuration, defined as follows:
 
 % loss_sim = hwr(cost_sim - margin_sim)^2
 % loss_diff = hwr(margin_diff - cost_diff)^2
@@ -160,12 +160,10 @@ D_p = || Z_i - Z_p ||_2,~D_n = || Z_i - Z_n ||_2\\
 \end{align*}
 % \vspace{-0.15in}
 
-Here, an observation, $X_i$, a positive neighbor, $X_p$, and a negative example $X_n$, are transformed by the model, $\mathcal{F}$, given the same parameters, $\Theta$.
+Here, three observations, $X_i$, $X_p$, $X_n$, are transformed by the model, $\mathcal{F}$, given the same parameters, $\Theta$.
 These observations are chosen such that $X_i, X_p \in \Gamma_k$ and $X_n \in \bar{\Gamma_k}$.
-Euclidean distance is computed between the positive and negative embedding pairs, and two margins, $m_p$ and $m_n$, define a floor on the positive and negative loss terms.
-
-This loss is computed over a mini-batch of observations, differentiated with respect to the parameters of model, and back-propagated through the network via simple stochastic gradient descent.
-Mini-batches consist of 32 triples, and training proceeds for 50k iterations.
+Euclidean distance is computed between embedding pairs, and two margins, $m_p$ and $m_n$, define thresholds on their respective loss terms.
+Parameters are learned via minibatch stochastic gradient descent with a batch size of 32, and training proceeded for 50k iterations.
 
 \subsection{Data}
 
@@ -178,25 +176,25 @@ The crux of this exploration lies in \emph{how} neighborhoods are defined and sa
 
 \section{Evaluation}
 
-After fitting models to the different neighborhood relationships, we consider a few approaches to assessing the organization of the resulting embeddings.
+We consider a few approaches to measuring the quality of the learned acoustic embeddings, the details of which are provided externally.\footnote{\url{https://github.com/ejhumphrey/icml16-dml}}
 % Neighbors
 Quantitatively, $k$-nearest neighbor classification measures the extent to which neighborhoods are preserved, and brute-force distance is used to sort data in a ranked retrieval setting.
-Overall we find the learned embeddings are well-organized and consistently demonstrate robust performance in query-by-example tasks.
+% Overall we find the learned embeddings are well-organized and consistently demonstrate robust performance in query-by-example tasks.
 % Consistent with previous results \cite{humphrey2011nlse, humphrey2015dl4mir}, the sharpness of class boundaries is inversely to the discrete number of neighborhoods, and is likely due in part to the limits of three-space.
 % Analogy
-Additionally, these representations lend themselves well to more qualitative inquiries.
-Visualization is the most straightforward way of exploring the learned embeddings, revealing some surprising behavior, as in Figure \ref{fig:asdr}.
+These representations additionally lend themselves well to visualization and sonification.
+Scatterplots reveal some surprising behavior, as in Figure \ref{fig:asdr}, where an attack-decay-sustain-release (ADSR) envelope is made apparent by following the evolution of sounds through space.
 Acoustic ``analogy'' serves as another good, if subjective, test of semantic organization, where the resultant vector between two points is applied to a third.
-Lastly, trajectories in space are sonified via concatenative synthesis, providing audible insight into the learned embeddings.
+Lastly, arbitrary sound trajectories are sonified via concatenative synthesis, providing audible insight into the learned embeddings.
 
 
 
 \begin{figure}[!t]
-\vskip -0.25in
+\vskip -0.35in
 \begin{center}
 \centerline{\includegraphics[width=3.2in]{inst-pitch-d2_adsr.pdf}}
 \vskip -0.2in
-\caption{An embedding space revealing an ADSR envelope. Randomly sampled observations (grayscale) show pitch height from low (black) to high (white). Four sounds are shown as lines from start (cirlces) to end (triangles) for trumpet (blue), trombone (green), tenor saxophone (red) and clarinet (magenta).}
+\caption{An embedding where random samples (grayscale) show pitch height from low (black) to high (white) and four sounds are shown from start (cirlces) to end (triangles): trumpet (blue), trombone (green), tenor saxophone (red) and clarinet (magenta).}
 \label{fig:asdr}
 \end{center}
 \vskip -0.25in
@@ -207,11 +205,11 @@ Lastly, trajectories in space are sonified via concatenative synthesis, providin
 \section{Summary}
 
 % Here's what we did
-We have explored a range of acoustic embeddings learned using a convolutional neural network optimized to preserve various neighborhood relationships between instrument sounds in 3 dimensions.
+A range of acoustic embeddings are learned using a convolutional neural network optimized to preserve different neighborhood relationships between instrument sounds in 3-space.
 % Here's what we found
-Through a variety of approaches, explore the semantic organization of the learned acoustic spaces, measuring performance and rendering different multimedia examples.
+The learned embeddings demonstrate a high degree of semantic organization, indicated by strong performance on retrieval tasks and noteworthy multimedia examples, provided externally.
 % Here's where we're going
-Showed some uses for low-dimensional representations for sound, and the potential this area holds for future exploration.
+In doing so, we hope to further motivate the usefulness of sound visualization in discovery, how deep networks can help address this challenge, and the potential this area holds for future exploration.
 % Novel interactions with sound and music.
 
 

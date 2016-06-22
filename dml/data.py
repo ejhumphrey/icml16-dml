@@ -325,51 +325,6 @@ NEIGHBORS = {
 }
 
 
-def slice_embedding(row):
-    """Generate slices of CQT observations.
-
-    Parameters
-    ----------
-    row : pd.Series
-        Row from a features dataframe.
-
-    Yields
-    ------
-    z_obs : np.ndarray
-        Embedding coordinate.
-
-    meta : dict
-        Metadata corresponding to the observation.
-    """
-    try:
-        data = np.load(row.prediction)['z_out']
-    except IOError as derp:
-        print("Failed reading row: {}\n\n{}".format(row.to_dict(), derp))
-        raise derp
-
-    num_obs = data.shape[0]
-    # Break the remainder out into a subfunction for reuse with embedding
-    # sampling.
-    idx = np.random.permutation(num_obs) if num_obs > 0 else None
-    if idx is None:
-        raise ValueError(
-            "Misshapen CQT ({}) - {}".format(data.shape, row.to_dict()))
-    np.random.shuffle(idx)
-    counter = 0
-    meta = dict(instrument=row.instrument, note_number=row.note_number,
-                fcode=row.fcode)
-
-    while num_obs > 0:
-        n = idx[counter]
-        obs = data[n:n + 1]
-        meta['idx'] = n
-        yield obs, meta
-        counter += 1
-        if counter >= len(idx):
-            np.random.shuffle(idx)
-            counter = 0
-
-
 def class_stream(neighbors, dataset, working_size=20, lam=5, with_meta=False):
     streams = dict()
     for key, indexes in neighbors.items():
@@ -445,3 +400,89 @@ def awgn(stream, loc, scale):
             data[k] += np.random.normal(loc, scale, data[k].shape)
 
         yield data
+
+
+def slice_embedding(row, n_length=1):
+    """Generate slices of CQT observations.
+
+    Parameters
+    ----------
+    row : pd.Series
+        Row from a features dataframe.
+
+    Yields
+    ------
+    z_obs : np.ndarray
+        Embedding coordinate.
+
+    meta : dict
+        Metadata corresponding to the observation.
+    """
+    try:
+        data = np.load(row.prediction)['z_out']
+    except IOError as derp:
+        print("Failed reading row: {}\n\n{}".format(row.to_dict(), derp))
+        raise derp
+
+    num_obs = data.shape[0] + 1 - n_length
+    # Break the remainder out into a subfunction for reuse with embedding
+    # sampling.
+    idx = np.random.permutation(num_obs) if num_obs > 0 else None
+    if idx is None:
+        raise ValueError(
+            "Misshapen CQT ({}) - {}".format(data.shape, row.to_dict()))
+    np.random.shuffle(idx)
+    counter = 0
+    meta = dict(instrument=row.instrument, note_number=row.note_number,
+                fcode=row.fcode)
+
+    while num_obs > 0:
+        n = idx[counter]
+        obs = data[n:n + n_length]
+        meta['idx'] = n
+        yield obs, meta
+        counter += 1
+        if counter >= len(idx):
+            np.random.shuffle(idx)
+            counter = 0
+
+
+def create_embedding_stream(dataset, working_size=100, lam=5, **kwargs):
+    seed_pool = [pescador.Streamer(slice_embedding, row, **kwargs)
+                 for idx, row in dataset.iterrows()]
+    return pescador.mux(seed_pool, n_samples=None,
+                        k=working_size, lam=lam)
+
+
+def sample_embeddings(dataset, num_points):
+    """Sample a collection of embedding points from a dataset.
+
+    Parameters
+    ----------
+    dataset : pd.DataFrame
+        DataFrame of embeddings.
+
+    num_points : int
+        Number of datapoints to sample.
+
+    Returns
+    -------
+    data : np.ndarray, shape=(num_points, 3)
+        Observations.
+
+    labels : pd.DataFrame, len=num_points
+        Sample labels.
+    """
+    # Eeek! Magic number.
+    data = np.zeros([num_points, 3])
+    labels = list()
+
+    stream = create_embedding_stream(
+        dataset, n_length=1, working_size=100, lam=5)
+
+    for n in range(num_points):
+        coords, meta = next(stream)
+        data[n, ...] = coords
+        labels.append(meta)
+
+    return data, pd.DataFrame.from_records(labels, index=range(num_points))
