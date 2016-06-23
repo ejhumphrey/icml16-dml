@@ -45,7 +45,7 @@ predict:
   output_dir: "/media/ejhumphrey/workspace/icml-dml/embeddings/instrument-000-050000-20160611_18h21m39s"
 
 score:
-  neighbor_mode: 'instrument'
+  # neighbor_mode: 'instrument'
   dataset_path: "/media/ejhumphrey/workspace/icml-dml/datasets/"
   embeddings: "/media/ejhumphrey/workspace/icml-dml/embeddings/instrument-000-050000-20160611_18h21m39s/output_index.json"
   num_neighbors:
