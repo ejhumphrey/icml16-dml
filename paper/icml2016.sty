@@ -1,8 +1,8 @@
 % File: icml2016.sty (LaTeX style file for ICML-2016)
 
-% This file contains the LaTeX formatting parameters for a two-column 
-% conference proceedings that is 8.5 inches wide by 11 inches high.  
-% 
+% This file contains the LaTeX formatting parameters for a two-column
+% conference proceedings that is 8.5 inches wide by 11 inches high.
+%
 % Modified by Percy Liang 12/2/2013: changed the year, location from the previous template for ICML 2014
 
 % Modified by Fei Sha 9/2/2013: changed the year, location form the previous template for ICML 2013
@@ -13,7 +13,7 @@
 %
 % Modified by Francesco Figari, 2012: changed years, location
 %
-% Modified by Christoph Sawade and Tobias Scheffer, 2011: added line 
+% Modified by Christoph Sawade and Tobias Scheffer, 2011: added line
 % numbers, changed years
 %
 % Modified by Hal Daume III, 2010: changed years, added hyperlinks
@@ -24,14 +24,14 @@
 %
 % Modified by Ricardo Silva, 2007: update of the ifpdf verification
 %
-% Modified by Prasad Tadepalli and Andrew Moore, merely changing years. 
+% Modified by Prasad Tadepalli and Andrew Moore, merely changing years.
 %
 % Modified by Kristian Kersting, 2005, based on Jennifer Dy's 2004 version
 % - running title. If the original title is to long or is breaking a line,
 %   use \icmltitlerunning{...} in the preamble to supply a shorter form.
-%   Added fancyhdr package to get a running head. 
-% - Updated to store the page size because pdflatex does compile the 
-%   page size into the pdf. 
+%   Added fancyhdr package to get a running head.
+% - Updated to store the page size because pdflatex does compile the
+%   page size into the pdf.
 %
 % Hacked by Terran Lane, 2003:
 % - Updated to use LaTeX2e style file conventions (ProvidesPackage,
@@ -70,7 +70,7 @@
 \RequirePackage{algorithm}
 \RequirePackage{algorithmic}
 \RequirePackage{natbib}
-\RequirePackage{eso-pic} % used by \AddToShipoutPicture 
+\RequirePackage{eso-pic} % used by \AddToShipoutPicture
 
 %%%%%%%% Options
 \DeclareOption{accepted}{%
@@ -107,10 +107,18 @@
 % final/accepted version of the ``appearing in'' note.  Modify it to
 % change that text.
 %%%%%%%%%%%%%%%%%%%%
-\newcommand{\ICML@appearing}{\textit{Proceedings of the
-$\mathit{33}^{rd}$ International Conference on Machine Learning},
-New York, NY, USA, 2016. JMLR: W\&CP volume 48. 
-Copyright 2016 by the author(s).}
+%\newcommand{\ICML@appearing}{\textit{Proceedings of the
+%$\mathit{33}^{rd}$ International Conference on Machine Learning},
+%New York, NY, USA, 2016. JMLR: W\&CP volume 48.
+%Copyright 2016 by the author(s).}
+
+\newcommand{\ICML@appearing}{\copyright\ Eric J. Humphrey,
+Licensed under a Creative Commons Attribution 4.0
+International License (CC BY 4.0). {\bf Attribution: }Eric J. Humphrey,
+``Deep Manifold Learning on Music Audio for Navigating Large Sound Libraries''
+\textit{Machine Learning for Music Discovery Workshop} at the
+\textit{$\mathit{33}^{rd}$ International Conference on Machine Learning}, New York, NY, 2016.
+}
 
 %%%%%%%%%%%%%%%%%%%%
 % This string is printed at the bottom of the page for the draft/under
@@ -135,7 +143,7 @@ International Conference on Machine Learning (ICML).  Do not distribute.}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % to ensure the letter format is used. pdflatex does compile the
-% page size into the pdf. This is done using \pdfpagewidth and 
+% page size into the pdf. This is done using \pdfpagewidth and
 % \pdfpageheight. As Latex does not know this directives, we first
 % check whether pdflatex or latex is used.
 %
@@ -178,15 +186,15 @@ International Conference on Machine Learning (ICML).  Do not distribute.}
   \setlength{\pdfpageheight}{11in}
 \fi
 
-% Physical page layout 
+% Physical page layout
 
-\evensidemargin -0.23in  
-\oddsidemargin -0.23in 
+\evensidemargin -0.23in
+\oddsidemargin -0.23in
 \setlength\textheight{9.0in}
-\setlength\textwidth{6.75in} 
+\setlength\textwidth{6.75in}
 \setlength\columnsep{0.25in}
 \setlength\headheight{10pt}
-\setlength\headsep{10pt} 
+\setlength\headsep{10pt}
 \addtolength{\topmargin}{-20pt}
 
 %\setlength\headheight{1em}
@@ -221,11 +229,11 @@ International Conference on Machine Learning (ICML).  Do not distribute.}
 % the next column.  -- TDRL.
 \@float{copyrightbox}[b]
 \begin{center}
-\setlength{\unitlength}{1pc}
-\begin{picture}(20,1.5)
+\setlength{\unitlength}{1.9pc}
+\begin{picture}(20,2.5)
 % Create a line separating the main text from the note block.
 % 4.818pc==0.8in.
-\put(0,2.5){\line(1,0){4.818}}
+\put(0,2.75){\line(1,0){4.818}}
 % Insert the text string itself.  Note that the string has to be
 % enclosed in a parbox -- the \put call needs a box object to
 % position.  Without the parbox, the text gets splattered across the
@@ -240,16 +248,16 @@ International Conference on Machine Learning (ICML).  Do not distribute.}
 % Note: A few Latex versions need the next line instead of the former.
 % \addtolength{\topmargin}{0.3in}
 % \setlength\footheight{0pt}
-\setlength\footskip{0pt} 
-%\pagestyle{empty} 
+\setlength\footskip{0pt}
+%\pagestyle{empty}
 \flushbottom \twocolumn
 \sloppy
 
 % Clear out the addcontentsline command
 \def\addcontentsline#1#2#3{}
- 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% commands for formatting paper title, author names, and addresses. 
+%%% commands for formatting paper title, author names, and addresses.
 
 %%start%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%% title as running head -- Kristian Kersting 2005 %%%%%%%%%%%%%
@@ -263,7 +271,7 @@ International Conference on Machine Learning (ICML).  Do not distribute.}
 %  \mytoksb{#2}%
 %  \edef#1{\the\mytoksa\the\mytoksb}%
 %}
-%\makeatother 
+%\makeatother
 
 % box to check the size of the running head
 \newbox\titrun
@@ -306,7 +314,7 @@ International Conference on Machine Learning (ICML).  Do not distribute.}
    \else\ifdim\ht\titrun>6.25pt
 	   {\gdef\@runningtitleerror{2}}%
 	\fi
-   \fi 
+   \fi
 
    % if there is somthing wrong with the running title
    \ifnum\@runningtitleerror>0
@@ -329,7 +337,7 @@ International Conference on Machine Learning (ICML).  Do not distribute.}
   % no running title on the first page of the paper
   \thispagestyle{empty}
 
-%%%%%%%%%%%%%%%%%%%% Kristian Kersting %%%%%%%%%%%%%%%%%%%%%%%%%  
+%%%%%%%%%%%%%%%%%%%% Kristian Kersting %%%%%%%%%%%%%%%%%%%%%%%%%
 %end%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
   {\center\baselineskip 18pt
@@ -351,8 +359,8 @@ International Conference on Machine Learning (ICML).  Do not distribute.}
   \fi\fi}
 
 
-\def\toptitlebar{\hrule height1pt \vskip .25in} 
-\def\bottomtitlebar{\vskip .22in \hrule height1pt \vskip .3in} 
+\def\toptitlebar{\hrule height1pt \vskip .25in}
+\def\bottomtitlebar{\vskip .22in \hrule height1pt \vskip .3in}
 \def\icmlauthor#1#2{%
   \ifdefined\isaccepted
     \par {\bf #1} \hfill {\sc #2}%
@@ -384,7 +392,7 @@ International Conference on Machine Learning (ICML).  Do not distribute.}
 % modification to natbib citations
 \setcitestyle{authoryear,round,citesep={;},aysep={,},yysep={;}}
 
-% Redefinition of the abstract environment. 
+% Redefinition of the abstract environment.
 \renewenvironment{abstract}
    {%
 % Insert the ``appearing in'' copyright notice.
@@ -398,7 +406,7 @@ International Conference on Machine Learning (ICML).  Do not distribute.}
 \def\@startsection#1#2#3#4#5#6{\if@noskipsec \leavevmode \fi
    \par \@tempskipa #4\relax
    \@afterindenttrue
-% Altered the following line to indent a section's first paragraph. 
+% Altered the following line to indent a section's first paragraph.
 %  \ifdim \@tempskipa <\z@ \@tempskipa -\@tempskipa \@afterindentfalse\fi
    \ifdim \@tempskipa <\z@ \@tempskipa -\@tempskipa \fi
    \if@nobreak \everypar{}\else
@@ -406,7 +414,7 @@ International Conference on Machine Learning (ICML).  Do not distribute.}
      {\@ssect{#3}{#4}{#5}{#6}}{\@dblarg{\@sict{#1}{#2}{#3}{#4}{#5}{#6}}}}
 
 \def\@sict#1#2#3#4#5#6[#7]#8{\ifnum #2>\c@secnumdepth
-     \def\@svsec{}\else 
+     \def\@svsec{}\else
      \refstepcounter{#1}\edef\@svsec{\csname the#1\endcsname}\fi
      \@tempskipa #5\relax
       \ifdim \@tempskipa>\z@
@@ -425,10 +433,10 @@ International Conference on Machine Learning (ICML).  Do not distribute.}
      \@xsect{#5}}
 
 \def\@sect#1#2#3#4#5#6[#7]#8{\ifnum #2>\c@secnumdepth
-     \def\@svsec{}\else 
+     \def\@svsec{}\else
      \refstepcounter{#1}\edef\@svsec{\csname the#1\endcsname\hskip 0.4em }\fi
      \@tempskipa #5\relax
-      \ifdim \@tempskipa>\z@ 
+      \ifdim \@tempskipa>\z@
         \begingroup #6\relax
           \@hangfrom{\hskip #3\relax\@svsec}{\interlinepenalty \@M #8\par}
         \endgroup
@@ -456,67 +464,67 @@ International Conference on Machine Learning (ICML).  Do not distribute.}
   0.5ex minus .2ex}{-1em}{\normalsize\bf}}
 \def\subparagraph{\@startsection{subparagraph}{5}{\z@}{1.5ex plus
   0.5ex minus .2ex}{-1em}{\normalsize\bf}}
- 
-% Footnotes 
-\footnotesep 6.65pt % 
-\skip\footins 9pt 
-\def\footnoterule{\kern-3pt \hrule width 0.8in \kern 2.6pt } 
-\setcounter{footnote}{0} 
- 
-% Lists and paragraphs 
-\parindent 0pt 
-\topsep 4pt plus 1pt minus 2pt 
-\partopsep 1pt plus 0.5pt minus 0.5pt 
-\itemsep 2pt plus 1pt minus 0.5pt 
-\parsep 2pt plus 1pt minus 0.5pt 
-\parskip 6pt
- 
-\leftmargin 2em \leftmargini\leftmargin \leftmarginii 2em 
-\leftmarginiii 1.5em \leftmarginiv 1.0em \leftmarginv .5em  
-\leftmarginvi .5em 
-\labelwidth\leftmargini\advance\labelwidth-\labelsep \labelsep 5pt 
- 
-\def\@listi{\leftmargin\leftmargini} 
-\def\@listii{\leftmargin\leftmarginii 
-   \labelwidth\leftmarginii\advance\labelwidth-\labelsep 
-   \topsep 2pt plus 1pt minus 0.5pt 
-   \parsep 1pt plus 0.5pt minus 0.5pt 
-   \itemsep \parsep} 
-\def\@listiii{\leftmargin\leftmarginiii 
-    \labelwidth\leftmarginiii\advance\labelwidth-\labelsep 
-    \topsep 1pt plus 0.5pt minus 0.5pt  
-    \parsep \z@ \partopsep 0.5pt plus 0pt minus 0.5pt 
-    \itemsep \topsep} 
-\def\@listiv{\leftmargin\leftmarginiv 
-     \labelwidth\leftmarginiv\advance\labelwidth-\labelsep} 
-\def\@listv{\leftmargin\leftmarginv 
-     \labelwidth\leftmarginv\advance\labelwidth-\labelsep} 
-\def\@listvi{\leftmargin\leftmarginvi 
-     \labelwidth\leftmarginvi\advance\labelwidth-\labelsep} 
- 
-\abovedisplayskip 7pt plus2pt minus5pt% 
-\belowdisplayskip \abovedisplayskip 
-\abovedisplayshortskip  0pt plus3pt%    
-\belowdisplayshortskip  4pt plus3pt minus3pt% 
- 
-% Less leading in most fonts (due to the narrow columns) 
-% The choices were between 1-pt and 1.5-pt leading 
-\def\@normalsize{\@setsize\normalsize{11pt}\xpt\@xpt} 
-\def\small{\@setsize\small{10pt}\ixpt\@ixpt} 
-\def\footnotesize{\@setsize\footnotesize{10pt}\ixpt\@ixpt} 
-\def\scriptsize{\@setsize\scriptsize{8pt}\viipt\@viipt} 
-\def\tiny{\@setsize\tiny{7pt}\vipt\@vipt} 
-\def\large{\@setsize\large{14pt}\xiipt\@xiipt} 
-\def\Large{\@setsize\Large{16pt}\xivpt\@xivpt} 
-\def\LARGE{\@setsize\LARGE{20pt}\xviipt\@xviipt} 
-\def\huge{\@setsize\huge{23pt}\xxpt\@xxpt} 
-\def\Huge{\@setsize\Huge{28pt}\xxvpt\@xxvpt} 
 
-% Revised formatting for figure captions and table titles. 
+% Footnotes
+\footnotesep 6.65pt %
+\skip\footins 9pt
+\def\footnoterule{\kern-3pt \hrule width 0.8in \kern 2.6pt }
+\setcounter{footnote}{0}
+
+% Lists and paragraphs
+\parindent 0pt
+\topsep 4pt plus 1pt minus 2pt
+\partopsep 1pt plus 0.5pt minus 0.5pt
+\itemsep 2pt plus 1pt minus 0.5pt
+\parsep 2pt plus 1pt minus 0.5pt
+\parskip 6pt
+
+\leftmargin 2em \leftmargini\leftmargin \leftmarginii 2em
+\leftmarginiii 1.5em \leftmarginiv 1.0em \leftmarginv .5em
+\leftmarginvi .5em
+\labelwidth\leftmargini\advance\labelwidth-\labelsep \labelsep 5pt
+
+\def\@listi{\leftmargin\leftmargini}
+\def\@listii{\leftmargin\leftmarginii
+   \labelwidth\leftmarginii\advance\labelwidth-\labelsep
+   \topsep 2pt plus 1pt minus 0.5pt
+   \parsep 1pt plus 0.5pt minus 0.5pt
+   \itemsep \parsep}
+\def\@listiii{\leftmargin\leftmarginiii
+    \labelwidth\leftmarginiii\advance\labelwidth-\labelsep
+    \topsep 1pt plus 0.5pt minus 0.5pt
+    \parsep \z@ \partopsep 0.5pt plus 0pt minus 0.5pt
+    \itemsep \topsep}
+\def\@listiv{\leftmargin\leftmarginiv
+     \labelwidth\leftmarginiv\advance\labelwidth-\labelsep}
+\def\@listv{\leftmargin\leftmarginv
+     \labelwidth\leftmarginv\advance\labelwidth-\labelsep}
+\def\@listvi{\leftmargin\leftmarginvi
+     \labelwidth\leftmarginvi\advance\labelwidth-\labelsep}
+
+\abovedisplayskip 7pt plus2pt minus5pt%
+\belowdisplayskip \abovedisplayskip
+\abovedisplayshortskip  0pt plus3pt%
+\belowdisplayshortskip  4pt plus3pt minus3pt%
+
+% Less leading in most fonts (due to the narrow columns)
+% The choices were between 1-pt and 1.5-pt leading
+\def\@normalsize{\@setsize\normalsize{11pt}\xpt\@xpt}
+\def\small{\@setsize\small{10pt}\ixpt\@ixpt}
+\def\footnotesize{\@setsize\footnotesize{10pt}\ixpt\@ixpt}
+\def\scriptsize{\@setsize\scriptsize{8pt}\viipt\@viipt}
+\def\tiny{\@setsize\tiny{7pt}\vipt\@vipt}
+\def\large{\@setsize\large{14pt}\xiipt\@xiipt}
+\def\Large{\@setsize\Large{16pt}\xivpt\@xivpt}
+\def\LARGE{\@setsize\LARGE{20pt}\xviipt\@xviipt}
+\def\huge{\@setsize\huge{23pt}\xxpt\@xxpt}
+\def\Huge{\@setsize\Huge{28pt}\xxvpt\@xxvpt}
+
+% Revised formatting for figure captions and table titles.
 \newsavebox\newcaptionbox\newdimen\newcaptionboxwid
 
 \long\def\@makecaption#1#2{
- \vskip 10pt 
+ \vskip 10pt
         \baselineskip 11pt
         \setbox\@tempboxa\hbox{#1. #2}
         \ifdim \wd\@tempboxa >\hsize
@@ -524,14 +532,14 @@ International Conference on Machine Learning (ICML).  Do not distribute.}
         \newcaptionboxwid=\wd\newcaptionbox
         \usebox\newcaptionbox {\footnotesize #2}
 %        \usebox\newcaptionbox {\small #2}
-        \else 
-          \centerline{{\small\sl #1.} {\small #2}} 
+        \else
+          \centerline{{\small\sl #1.} {\small #2}}
         \fi}
 
 \def\fnum@figure{Figure \thefigure}
 \def\fnum@table{Table \thetable}
 
-% Strut macros for skipping spaces above and below text in tables. 
+% Strut macros for skipping spaces above and below text in tables.
 \def\abovestrut#1{\rule[0in]{0in}{#1}\ignorespaces}
 \def\belowstrut#1{\rule[-#1]{0in}{#1}\ignorespaces}
 
@@ -539,7 +547,7 @@ International Conference on Machine Learning (ICML).  Do not distribute.}
 \def\aroundspace{\abovestrut{0.20in}\belowstrut{0.10in}}
 \def\belowspace{\belowstrut{0.10in}}
 
-% Various personal itemization commands. 
+% Various personal itemization commands.
 \def\texitem#1{\par\noindent\hangindent 12pt
                \hbox to 12pt {\hss #1 ~}\ignorespaces}
 \def\icmlitem{\texitem{$\bullet$}}
