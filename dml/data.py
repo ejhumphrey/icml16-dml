@@ -423,6 +423,10 @@ def slice_embedding(row, n_length=1):
     except IOError as derp:
         print("Failed reading row: {}\n\n{}".format(row.to_dict(), derp))
         raise derp
+    except AttributeError as derp:
+        print("Row is missing an expected attribute: {}\n\n{}"
+              "".format(row.to_dict(), derp))
+        raise derp
 
     num_obs = data.shape[0] + 1 - n_length
     # Break the remainder out into a subfunction for reuse with embedding
